@@ -299,7 +299,8 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <div class="brandtitle">NEW YORK <span>EXPRESS</span></div>
       <div class="brandsub">Takács Martin · 2026.09.16–27. · 12 megálló, egy körút</div>
     </div>
-    <button class="darktoggle" id="darkToggleBtn" onclick="toggleDarkMode()" title="Sötét/világos mód" style="margin-left:auto;">🌙</button>
+    <span id="syncBadge" style="display:none;margin-left:auto;font-size:.68rem;color:#bbb;align-items:center;padding:0 8px;"></span>
+    <button class="darktoggle" id="darkToggleBtn" onclick="toggleDarkMode()" title="Sötét/világos mód">🌙</button>
   </div>
   <div class="route-strip">
     <div class="route-track" id="routeTrack">
@@ -780,6 +781,7 @@ let anytimeOptions = loadAnytimeList();
 function atCheckedKey(id){ return 'ny2026_anytime-'+id; }
 function onAnytimeCheck(id, checked){
   localStorage.setItem(atCheckedKey(id), checked?'1':'0');
+  syncWriteCheck('anytime-'+id, checked?'1':'0');
   document.querySelectorAll('.anytime-sync-'+id).forEach(el=>{
     if(el.tagName==='INPUT') el.checked = checked;
     else el.classList.toggle('checked', checked);
@@ -885,11 +887,11 @@ function addBudgetEntry(dayId){
   const amt = parseFloat(amtEl.value);
   if(!desc || isNaN(amt) || amt<=0) return;
   budgetEntries.push({id:'b'+Date.now()+Math.floor(Math.random()*1000), day:dayId, desc, amt});
-  saveBudget(); renderBudget();
+  saveBudget(); renderBudget(); syncWriteBudget();
 }
 function deleteBudgetEntry(id){
   budgetEntries = budgetEntries.filter(e=>e.id!==id);
-  saveBudget(); renderBudget();
+  saveBudget(); renderBudget(); syncWriteBudget();
 }
 function budgetKeydown(e, dayId){ if(e.key==='Enter') addBudgetEntry(dayId); }
 function renderBudget(){
@@ -919,6 +921,80 @@ function renderBudget(){
   wrap.innerHTML = html;
   const totalEl = document.getElementById('budgettotal');
   if(totalEl) totalEl.textContent = '$'+total.toFixed(2);
+}
+
+/* ============================================================
+   ESZKÖZÖK KÖZÖTTI SZINKRON (Firebase Realtime Database, REST + SSE)
+   Két telefon között élőben szinkronizálja a pipákat és a költéseket —
+   nem kell hozzá saját backend, csak egy ingyenes Firebase RTDB.
+   Kitöltés: állítsd be a SYNC_DB_URL-t (Firebase console → Realtime Database
+   → URL, kb. "https://PROJEKTNEV-default-rtdb.firebaseio.com" formában).
+   Amíg üres, a szinkron ki van kapcsolva, az app localStorage-only marad.
+   ============================================================ */
+const SYNC_DB_URL = "";
+const SYNC_TRIP_ID = "ny2026-takacs";
+const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
+let syncEnabled = !!SYNC_DB_URL;
+let syncStatus = 'off'; // off | connecting | live | error
+
+function updateSyncBadge(){
+  const el = document.getElementById('syncBadge');
+  if(!el) return;
+  if(!syncEnabled){ el.style.display = 'none'; return; }
+  el.style.display = 'inline-flex';
+  const labels = {connecting:'🔄 Szinkronizálás…', live:'🟢 Élő szinkron', error:'⚠️ Szinkron hiba'};
+  el.textContent = labels[syncStatus] || '';
+}
+function syncWriteCheck(key, val){
+  if(!syncEnabled) return;
+  fetch(SYNC_PATH + "/checks/" + encodeURIComponent(key) + ".json", {
+    method: "PUT", body: JSON.stringify(val)
+  }).catch(()=>{});
+}
+function syncWriteBudget(){
+  if(!syncEnabled) return;
+  fetch(SYNC_PATH + "/budget.json", { method:"PUT", body: JSON.stringify(budgetEntries) }).catch(()=>{});
+}
+function applyRemoteState(remote){
+  if(!remote) return;
+  if(remote.checks && typeof remote.checks === 'object'){
+    Object.keys(remote.checks).forEach(key=>{
+      const val = remote.checks[key];
+      localStorage.setItem('ny2026_'+key, (val==='1'||val===1) ? '1' : '0');
+    });
+    refreshVisuals();
+    if(typeof renderFood==='function') renderFood();
+    if(typeof days!=='undefined') days.forEach(d=>{ if(typeof renderDayFood==='function') renderDayFood(d.id); });
+    if(typeof refreshAllAnytimeBlocks==='function') refreshAllAnytimeBlocks();
+  }
+  if(Array.isArray(remote.budget)){
+    budgetEntries = remote.budget;
+    localStorage.setItem('ny2026_budgetEntries', JSON.stringify(budgetEntries));
+    if(typeof renderBudget==='function') renderBudget();
+  }
+}
+function initSync(){
+  if(!syncEnabled) return;
+  syncStatus = 'connecting'; updateSyncBadge();
+  fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
+    applyRemoteState(data);
+    syncStatus = 'live'; updateSyncBadge();
+    const es = new EventSource(SYNC_PATH + ".json");
+    function handleEvent(e){
+      try{
+        const msg = JSON.parse(e.data);
+        const path = msg.path, val = msg.data;
+        if(path === "/") applyRemoteState(val);
+        else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
+        else if(path === "/budget") applyRemoteState({budget: val});
+        else if(path === "/checks" ) applyRemoteState({checks: val});
+      }catch(err){}
+    }
+    es.addEventListener('put', handleEvent);
+    es.addEventListener('patch', handleEvent);
+    es.onerror = ()=>{ syncStatus = 'error'; updateSyncBadge(); };
+    es.onopen = ()=>{ syncStatus = 'live'; updateSyncBadge(); };
+  }).catch(()=>{ syncStatus = 'error'; updateSyncBadge(); });
 }
 
 /* ============================================================
@@ -1414,6 +1490,7 @@ renderPacking();
 function onCheck(dayId, cid){
   const el = document.getElementById(cid);
   localStorage.setItem('ny2026_'+cid, el.checked?'1':'0');
+  syncWriteCheck(cid, el.checked?'1':'0');
   const mirror = document.querySelector('.mirror[data-target="'+cid+'"]');
   if(mirror) mirror.checked = el.checked;
   refreshVisuals();
@@ -1466,6 +1543,7 @@ function restIdx(r){ return restaurants.indexOf(r); }
 function restChecked(idx){ return localStorage.getItem('ny2026_rchk-'+idx)==='1'; }
 function toggleRest(idx, checked){
   localStorage.setItem('ny2026_rchk-'+idx, checked?'1':'0');
+  syncWriteCheck('rchk-'+idx, checked?'1':'0');
   document.querySelectorAll('.rest-sync-'+idx).forEach(el=>{
     if(el.tagName==='INPUT') el.checked = checked;
     else el.classList.toggle('checked', checked);
@@ -1835,6 +1913,8 @@ renderMapView();
 refreshVisuals();
 updateTrainMarker();
 renderBudget();
+updateSyncBadge();
+initSync();
 goto('view-days');
 showDay(days[0].id);
 
