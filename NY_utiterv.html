@@ -324,7 +324,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <span class="pill2">✈️ Oda: <b>EWR 13:50</b> landolás</span>
       <span class="pill2">✈️ Haza: <b>JFK 21:50</b> indulás</span>
       <span class="pill2">🏠 <b>1815 43rd St, North Bergen NJ</b></span>
-      <span class="pill2">📍 <b>101</b> hely + <b>48</b> étterem a listádból</span>
+      <span class="pill2">📍 <b>115</b> hely + <b>47</b> étterem a listádból</span>
     </div>
   </div>
 
@@ -385,7 +385,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <div class="view" id="view-food">
   <div class="sign">
     <h2><span class="em">🍔</span>Étterem-felfedező</h2>
-    <p style="margin-top:0;color:var(--muted);font-size:.86rem;">Keress vagy szűrj zóna szerint — mind a 48 étterem a "New york kaja" gyűjteményedből, de itt már nem a gyűjteménybe pinelt egyetlen cím a forrás, hanem kutatással ellenőrzött, valódi helyszínlista minden étteremhez. Ahol csak egy hely van, ott a 📍 gomb egyenesen odavisz. Ahol több valódi NYC-i helyszíne is van (🔗 jelzéssel, a szám mutatja hányat), ott a 🔗 gomb egy listát nyit meg az összes ellenőrzött helyszínnel — így nem egy másik napra bejelölt fiókra navigálsz. A napi terveknél ugyanez a helyszínlista dönti el, hogy egy étteremnek van-e ténylegesen fiókja az aznapi városrészben.</p>
+    <p style="margin-top:0;color:var(--muted);font-size:.86rem;">Keress vagy szűrj zóna szerint — mind a 47 étterem a "New york kaja" gyűjteményedből, de itt már nem a gyűjteménybe pinelt egyetlen cím a forrás, hanem kutatással ellenőrzött, valódi helyszínlista minden étteremhez. Ahol csak egy hely van, ott a 📍 gomb egyenesen odavisz. Ahol több valódi NYC-i helyszíne is van (🔗 jelzéssel, a szám mutatja hányat), ott a 🔗 gomb egy listát nyit meg az összes ellenőrzött helyszínnel — így nem egy másik napra bejelölt fiókra navigálsz. A napi terveknél ugyanez a helyszínlista dönti el, hogy egy étteremnek van-e ténylegesen fiókja az aznapi városrészben.</p>
     <input class="searchbar" id="foodsearch" placeholder="Keresés név vagy konyha szerint… (pl. bagel, pizza, burger)">
     <div class="chipbar" id="areachips"></div>
     <div class="rcount" id="rcount"></div>
@@ -552,7 +552,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <div class="view" id="view-checklist">
   <div class="sign">
     <h2><span class="em">🎫</span>Minden látványosság egy listában</h2>
-    <p style="color:var(--muted);font-size:.84rem;margin-top:0;">Mind a 101 hely a "New york helyszín" listádból, ugyanazok a pipák mint a napi terveknél — ha itt kipipálsz valamit, a napi nézetben is pipálva lesz, és fordítva. Az éttermek külön listában, az Étterem-felfedezőben vannak (ott is pipálhatók, szintén szinkronban a napi étterem-ajánlóval).</p>
+    <p style="color:var(--muted);font-size:.84rem;margin-top:0;">Mind a 115 hely a "New york helyszín" listádból, ugyanazok a pipák mint a napi terveknél — ha itt kipipálsz valamit, a napi nézetben is pipálva lesz, és fordítva. Az éttermek külön listában, az Étterem-felfedezőben vannak (ott is pipálhatók, szintén szinkronban a napi étterem-ajánlóval).</p>
     <input class="searchbar" id="checklistsearch" placeholder="Keresés a listában… (pl. central park, múzeum, híd)">
     <div class="rcount" id="checklistcount"></div>
     <div id="fulllist"></div>
@@ -594,11 +594,10 @@ const restaurants = [
  {n:"Scarr's Pizza", t:"Pizza", p:"10–20 $", r:"4,4", locs:["East Village"]},
  {n:"Shake Shack", t:"Hamburger (eredeti hely: Madison Square Park + Times Square, 1700 Broadway)", p:"10–20 $", r:"4,4", locs:["Bárhol"]},
  {n:"Peter Pan Donut & Pastry Shop", t:"Fánk (valójában Greenpoint, Williamsburghoz legközelebbi zóna)", p:"1–10 $", r:"4,6", locs:["Williamsburg"]},
- {n:"Fifth Avenue Diner", t:"Amerikai gyorsétkezde", p:"10–20 $", r:"4,2", locs:["Midtown"], note:"nem teljesen ellenőrizhető adat, kezeld óvatosan"},
  {n:"Brooklyn Bagel & Coffee Company", t:"Bagelbolt", p:"10–20 $", r:"4,5", locs:["Chelsea","West Village","Astoria"]},
  {n:"Nowon East Village", t:"Koreai", p:"30–70 $", r:"4,5", locs:["East Village","Williamsburg"]},
  {n:"Dunkin'", t:"Kávézó", p:"1–10 $", r:"3,9", locs:["Bárhol"]},
- {n:"Olive Garden", t:"Olasz (Times Square — Manhattan egyetlen helyszíne)", p:"20–30 $", r:"4,1", locs:["Midtown"]},
+ {n:"Olive Garden", t:"Olasz (Manhattanben csak a Times Square-i, de 900+ helyszín országosan — igazi országos lánc)", p:"20–30 $", r:"4,1", locs:["Bárhol"]},
  {n:"Butler", t:"Pékség / kávézó", p:"10–20 $", r:"4,6", locs:["Williamsburg","Dumbo"]},
  {n:"Caffe Paradiso", t:"Olasz kávézó", p:"1–10 $", r:"4,5", locs:["SoHo/Tribeca","Upper West Side"]},
  {n:"Sunday Morning", t:"Pékség / brunch", p:"10–20 $", r:"4,5", locs:["East Village"]},
