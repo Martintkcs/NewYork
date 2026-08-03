@@ -373,7 +373,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <button class="shufflebtn" style="background:#999;color:#fff;" onclick="setAllMapDays(false)">🚫 Mind elrejt</button>
     </div>
     <div class="mapsvgwrap" id="mapsvgwrap"></div>
-    <div class="note" style="margin-top:8px;">A <b>Coney Island</b> (10. nap, Astoria párja) jóval délebbre van, az alap nagyításnál a térkép alsó szélén túl esik — nyomd meg a ⛶ gombot, hogy lásd. A 12. nap (utolsó nap) reggel még a szálláson van, aztán amit kihagytatok azt pótolja, este pedig JFK-re megy 21:50-es indulással — ld. külön a Napi tervben.</div>
+    <div class="note" style="margin-top:8px;">A <b>Coney Island</b> (10. nap, Astoria párja) jóval délebbre van, az alap nagyításnál a térkép alsó szélén túl esik — nyomd meg a ⛶ gombot, hogy lásd. A <b>Hamptons</b> (10. nap alternatívája) Long Island keleti végén, ezen a térképkivágáson jóval túl van — a jobb szélen egy "Hamptons →" felirat jelzi az irányát, nem pontos helyként. A 12. nap (utolsó nap) reggel még a szálláson van, aztán amit kihagytatok azt pótolja, este pedig JFK-re megy 21:50-es indulással — ld. külön a Napi tervben.</div>
   </div>
   <div class="sign">
     <h2><span class="em">📋</span>Jelmagyarázat — ki/be kapcsolható, mind a 12 nap</h2>
@@ -716,7 +716,8 @@ const days = [
  blocks:[
   {h:"Délelőtt–délután", items:[{n:"Coney Island", d:"tengerpart, móló, vidámpark"}]},
   {h:"Késő délután", items:[{n:"Astoria Park", d:"Queens"}]},
-  {h:"Este", items:[{n:"Coney Island boardwalk esti fényekben", d:"✨ saját tipp — Luna Park esti fényei, ha még ott vagytok napnyugtakor", q:"Luna Park, Coney Island, New York"},{n:"Taverna Kyclades", d:"✨ saját tipp (nincs a listádon) — híres görög étterem Astoriában, foglalás ajánlott", q:"Taverna Kyclades, Astoria, New York"}]}
+  {h:"Este", items:[{n:"Coney Island boardwalk esti fényekben", d:"✨ saját tipp — Luna Park esti fényei, ha még ott vagytok napnyugtakor", q:"Luna Park, Coney Island, New York"},{n:"Taverna Kyclades", d:"✨ saját tipp (nincs a listádon) — híres görög étterem Astoriában, foglalás ajánlott", q:"Taverna Kyclades, Astoria, New York"}]},
+  {h:"Alternatíva — csak ha inkább ezt választanátok Coney Island helyett", items:[{n:"The Hamptons", d:"a listádon szerepel, de messze van (Long Island keleti vége, ~2–2,5 óra vonattal a Long Island Rail Roaddal Penn Stationtől, vagy autóval) — emiatt EGÉSZ napos kirándulás, nem fér bele Coney Island + Astoria mellé ugyanabba a napba. Ha ezt választjátok, inkább ez legyen az egész 10. nap, Coney Island/Astoria helyett.", q:"The Hamptons, New York"}]}
  ]},
 {id:"d11", num:11, date:"09.26, Szombat", title:"Williamsburg & Smorgasburg", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg"],
  blocks:[
@@ -1558,6 +1559,11 @@ const mapAreas = [
 const mapMarkers = [
   {dayId:"d1", label:"Szállás (North Bergen, NJ)", x:197.9, y:305.1}
 ];
+// A Hamptons Long Island keleti végén van, jóval túl ezen a térképkivágáson (nem fér bele
+// pontos helyként) — ezért egy szélre húzott irány-jelölő mutatja, hogy arrafelé, mennyi időre van.
+const mapEdgeHints = [
+  {dayId:"d10", label:"Hamptons ~2 óra →", x:978, y:300}
+];
 // tágabb városrész-feliratok háttérként — ugyanabból a valós határ-adatbázisból (reprezentátív pont minden szomszédsághoz)
 const NYC_HOOD_LABELS = [
   {x:355.0, y:319.0, label:"Central Park"},
@@ -1684,6 +1690,14 @@ function renderMapView(){
       <text class="maplabel" x="${a.x}" y="${a.y+6}" style="font-size:16px;">${day.num}</text>
     </g>`;
   }).join('');
+  const edgeHintsHtml = mapEdgeHints.map(a=>{
+    const day = days.find(d=>d.id===a.dayId);
+    if(!day) return '';
+    return `<g class="mapmarker mapedgehint" data-day="${a.dayId}" onclick="mapAreaClick('${a.dayId}')">
+      <text x="${a.x}" y="${a.y}" text-anchor="end" font-size="13" font-weight="800" fill="${day.color}"
+        stroke="#fff" stroke-width="3" paint-order="stroke" style="font-family:inherit;">${a.label}</text>
+    </g>`;
+  }).join('');
   wrap.innerHTML = `<svg id="mapsvg" viewBox="0 0 ${NYC_VBW} ${NYC_VBH}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <clipPath id="manhattanClip"><path d="${NYC_BOROUGHS.Manhattan}"/></clipPath>
@@ -1695,6 +1709,7 @@ function renderMapView(){
       ${hoodLabelsHtml}
       ${areasHtml}
       ${markersHtml}
+      ${edgeHintsHtml}
     </svg>
   <div class="mapctrls">
     <button class="mapctrlbtn" onclick="mapZoomIn()" title="Nagyítás">+</button>
