@@ -1044,16 +1044,22 @@ function dayFoodMatches(day){
 }
 function chainAreaCtx(r, day){
   // több helyszínes éttermeknél az adott nap zónái közül azt válasszuk keresési kontextusnak,
-  // amelyikben a kutatás szerint TÉNYLEG van fiók.
+  // amelyikben a kutatás szerint TÉNYLEG van fiók. Az igazi országos láncoknál ("Bárhol") nincs
+  // konkrét ellenőrzött fiók, DE a keresést akkor is az aznapi városrészre kell szűkíteni —
+  // különben a keresés kontextus nélkül marad, és egy távoli/rossz fiókot dobhat fel.
   const zones = restZones(r);
   const match = zones.find(z=> z!=="Bárhol" && day.zones.includes(z));
   if(match) return match;
-  return zones[0]!=="Bárhol" ? zones[0] : null;
+  if(zones[0]==="Bárhol") return day.zones.find(z=>z!=="Bárhol") || null;
+  return zones[0];
 }
 function restaurantMapsUrl(r, areaCtx){
-  // több helyszínes éttermeknél nem egy fix címre mutatunk, hanem az adott környékre szűkített
-  // Google Maps keresésre — így mindig az odaillő fiókot dobja fel, nem egy máshol lévő helyet.
-  const area = areaCtx || (r.locs[0]!=="Bárhol" ? r.locs[0] : "");
+  // több helyszínes / országos láncos éttermeknél nem egy fix címre mutatunk, hanem az adott
+  // környékre szűkített Google Maps keresésre — így mindig az odaillő (legközelebbi) fiókot
+  // dobja fel. A "Bárhol" szó maga SOHA nem kerülhet bele keresési kifejezésként.
+  const ctx = (areaCtx && areaCtx!=="Bárhol") ? areaCtx : null;
+  const fallback = (r.locs[0] && r.locs[0]!=="Bárhol") ? r.locs[0] : null;
+  const area = ctx || fallback || "";
   const q = area ? (r.n+", "+area+", New York") : (r.n+", New York");
   return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q);
 }
@@ -1241,7 +1247,7 @@ function renderDayFood(dayId){
     const url = restaurantMapsUrl(r, areaCtx);
     const chainNote = multi
       ? ` <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🔗 ${r.locs.length} ellenőrzött helyszín — itt: ${areaCtx||r.locs[0]}</span>`
-      : (r.locs[0]==="Bárhol" ? ' <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🌎 országos lánc, mindenhol van</span>' : '');
+      : (r.locs[0]==="Bárhol" ? ` <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🌎 országos lánc — a 📍 itt keres: ${areaCtx||'a környéken'}</span>` : '');
     const pin = multi
       ? `<a class="pinbtn" href="#" onclick="event.preventDefault();event.stopPropagation();openLocModal(${idx})" title="Összes ismert helyszín">🔗</a>`
       : `<a class="pinbtn" href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Megnyitás Google Mapsben">📍</a>`;
