@@ -299,7 +299,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <div class="brandtitle">NEW YORK <span>EXPRESS</span></div>
       <div class="brandsub">Takács Martin · 2026.09.16–27. · 12 megálló, egy körút</div>
     </div>
-    <span id="syncBadge" style="display:none;margin-left:auto;font-size:.68rem;color:#bbb;align-items:center;padding:0 8px;"></span>
+    <span id="syncBadge" onclick="forceResync()" title="Kattints az újraszinkronizáláshoz" style="display:none;cursor:pointer;margin-left:auto;font-size:.68rem;color:#bbb;align-items:center;padding:0 8px;"></span>
     <button class="darktoggle" id="darkToggleBtn" onclick="toggleDarkMode()" title="Sötét/világos mód">🌙</button>
   </div>
   <div class="route-strip">
@@ -794,6 +794,7 @@ function addAnytimeOption(){
   const id = 'custom'+Date.now()+Math.floor(Math.random()*1000);
   anytimeOptions.push({id, n:n.trim(), d:d.trim()});
   saveAnytimeList();
+  syncWriteAnytimeList();
   refreshAllAnytimeBlocks();
 }
 function editAnytimeOption(id){
@@ -806,6 +807,7 @@ function editAnytimeOption(id){
   opt.n = n.trim() || opt.n;
   opt.d = d.trim();
   saveAnytimeList();
+  syncWriteAnytimeList();
   refreshAllAnytimeBlocks();
 }
 function deleteAnytimeOption(id){
@@ -813,6 +815,7 @@ function deleteAnytimeOption(id){
   anytimeOptions = anytimeOptions.filter(o=>o.id!==id);
   localStorage.removeItem(atCheckedKey(id));
   saveAnytimeList();
+  syncWriteAnytimeList();
   refreshAllAnytimeBlocks();
 }
 function refreshAllAnytimeBlocks(){
@@ -955,6 +958,10 @@ function syncWriteBudget(){
   if(!syncEnabled) return;
   fetch(SYNC_PATH + "/budget.json", { method:"PUT", body: JSON.stringify(budgetEntries) }).catch(()=>{});
 }
+function syncWriteAnytimeList(){
+  if(!syncEnabled) return;
+  fetch(SYNC_PATH + "/anytimeList.json", { method:"PUT", body: JSON.stringify(anytimeOptions) }).catch(()=>{});
+}
 function applyRemoteState(remote){
   if(!remote) return;
   if(remote.checks && typeof remote.checks === 'object'){
@@ -972,6 +979,11 @@ function applyRemoteState(remote){
     localStorage.setItem('ny2026_budgetEntries', JSON.stringify(budgetEntries));
     if(typeof renderBudget==='function') renderBudget();
   }
+  if(Array.isArray(remote.anytimeList)){
+    anytimeOptions = remote.anytimeList;
+    localStorage.setItem('ny2026_anytimeList', JSON.stringify(anytimeOptions));
+    if(typeof refreshAllAnytimeBlocks==='function') refreshAllAnytimeBlocks();
+  }
 }
 function initSync(){
   if(!syncEnabled) return;
@@ -987,6 +999,7 @@ function initSync(){
         if(path === "/") applyRemoteState(val);
         else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
         else if(path === "/budget") applyRemoteState({budget: val});
+        else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
         else if(path === "/checks" ) applyRemoteState({checks: val});
       }catch(err){}
     }
@@ -995,6 +1008,31 @@ function initSync(){
     es.onerror = ()=>{ syncStatus = 'error'; updateSyncBadge(); };
     es.onopen = ()=>{ syncStatus = 'live'; updateSyncBadge(); };
   }).catch(()=>{ syncStatus = 'error'; updateSyncBadge(); });
+}
+// Ha valaki net nélkül (pl. metrón) pipál valamit, az akkor is elmentődik localStorage-ba —
+// csak a Firebase-be küldés hiúsul meg csendben. Amint visszajön a net, PATCH-eljük vissza
+// a teljes helyi állapotot, hogy a másik telefon is megkapja azt, amit offline pipáltunk.
+function pushFullLocalSnapshot(){
+  if(!syncEnabled) return;
+  const checks = {};
+  if(typeof allCheckIds!=='undefined') allCheckIds.forEach(cid=>{
+    const v = localStorage.getItem('ny2026_'+cid); if(v!==null) checks[cid]=v;
+  });
+  if(typeof restaurants!=='undefined') restaurants.forEach((r,i)=>{
+    const v = localStorage.getItem('ny2026_rchk-'+i); if(v!==null) checks['rchk-'+i]=v;
+  });
+  if(typeof anytimeOptions!=='undefined') anytimeOptions.forEach(o=>{
+    const v = localStorage.getItem(atCheckedKey(o.id)); if(v!==null) checks['anytime-'+o.id]=v;
+  });
+  if(Object.keys(checks).length) fetch(SYNC_PATH+"/checks.json", {method:"PATCH", body: JSON.stringify(checks)}).catch(()=>{});
+  syncWriteBudget();
+  syncWriteAnytimeList();
+}
+window.addEventListener('online', pushFullLocalSnapshot);
+function forceResync(){
+  if(!syncEnabled) return;
+  pushFullLocalSnapshot();
+  fetch(SYNC_PATH + ".json").then(r=>r.json()).then(applyRemoteState).catch(()=>{});
 }
 
 /* ============================================================
