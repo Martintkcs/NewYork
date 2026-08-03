@@ -177,8 +177,7 @@ main{max-width:1000px;margin:0 auto;padding:16px 12px 90px;}
 .mapsvgwrap{position:relative;overflow:hidden;background:#dcecf5;border-radius:8px;border:1.5px solid var(--black);
   aspect-ratio:3/4;max-height:80vh;touch-action:none;cursor:grab;}
 .mapsvgwrap.grabbing{cursor:grabbing;}
-.mapzoomlayer{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform;}
-.mapzoomlayer svg{display:block;}
+#mapsvg{display:block;width:100%;height:100%;}
 .boropath{stroke:#8a8570;stroke-width:1.5;stroke-linejoin:round;}
 .boropath[data-boro="Manhattan"]{fill:#ded9c4;}
 .boropath[data-boro="Brooklyn"]{fill:#cfcabb;}
@@ -1248,7 +1247,7 @@ function renderDayFood(dayId){
     const url = restaurantMapsUrl(r, areaCtx);
     const chainNote = multi
       ? ` <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🔗 ${r.locs.length} ellenőrzött helyszín — itt: ${areaCtx||r.locs[0]}</span>`
-      : (r.locs[0]==="Bárhol" ? ' <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🔗 országos lánc</span>' : '');
+      : (r.locs[0]==="Bárhol" ? ' <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🌎 országos lánc, mindenhol van</span>' : '');
     const pin = multi
       ? `<a class="pinbtn" href="#" onclick="event.preventDefault();event.stopPropagation();openLocModal(${idx})" title="Összes ismert helyszín">🔗</a>`
       : `<a class="pinbtn" href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Megnyitás Google Mapsben">📍</a>`;
@@ -1567,6 +1566,7 @@ const mapMarkers = [
 ];
 // tágabb városrész-feliratok háttérként — ugyanabból a valós határ-adatbázisból (reprezentátív pont minden szomszédsághoz)
 const NYC_HOOD_LABELS = [
+  {x:355.0, y:319.0, label:"Central Park"},
   {x:261.0, y:509.3, label:"Tribeca"},
   {x:274.3, y:492.0, label:"SoHo"},
   {x:290.4, y:498.9, label:"Nolita"},
@@ -1628,30 +1628,35 @@ function manhattanStreetGrid(){
   return lines;
 }
 const MANHATTAN_FOCUS = {x:314, y:383};
-let mapZoom = 1.8, mapPanX = 0, mapPanY = 0;
-function applyMapTransform(){
-  const layer = document.getElementById('mapzoomlayer');
-  if(layer) layer.style.transform = `translate(${mapPanX}px, ${mapPanY}px) scale(${mapZoom})`;
+// A zoomot/pant NEM CSS transform:scale()-lel csináljuk (azt a böngésző compositor egy
+// fix felbontású bitmap-textúraként kezeli, ezért nagy nagyításnál elmosódik), hanem
+// közvetlenül az SVG viewBox attribútumát mozgatjuk — így minden nagyításnál újra
+// vektorosan renderelődik a térkép, sosem homályos.
+const MAP_MIN_ZOOM = 0.45, MAP_MAX_ZOOM = 10;
+let vbX = 0, vbY = 0, vbW = NYC_VBW, vbH = NYC_VBH;
+function currentMapZoom(){ return NYC_VBW/vbW; }
+function setViewBox(x, y, w, h){
+  vbX=x; vbY=y; vbW=w; vbH=h;
+  const svg = document.getElementById('mapsvg');
+  if(svg) svg.setAttribute('viewBox', x+' '+y+' '+w+' '+h);
 }
 function centerMapOn(px, py, zoom){
+  const w = NYC_VBW/zoom, h = NYC_VBH/zoom;
+  setViewBox(px-w/2, py-h/2, w, h);
+}
+function zoomMapBy(factor, originXpx, originYpx){
   const wrap = document.getElementById('mapsvgwrap');
   if(!wrap) return;
   const rect = wrap.getBoundingClientRect();
-  mapZoom = zoom;
-  mapPanX = rect.width/2 - px*mapZoom;
-  mapPanY = rect.height/2 - py*mapZoom;
-  applyMapTransform();
-}
-function zoomMapBy(factor, originX, originY){
-  const wrap = document.getElementById('mapsvgwrap');
-  const rect = wrap.getBoundingClientRect();
-  const cx = originX!==undefined ? originX : rect.width/2;
-  const cy = originY!==undefined ? originY : rect.height/2;
-  const worldX = (cx - mapPanX)/mapZoom, worldY = (cy - mapPanY)/mapZoom;
-  mapZoom = Math.min(8, Math.max(0.45, mapZoom*factor));
-  mapPanX = cx - worldX*mapZoom;
-  mapPanY = cy - worldY*mapZoom;
-  applyMapTransform();
+  const ox = originXpx!==undefined ? originXpx : rect.width/2;
+  const oy = originYpx!==undefined ? originYpx : rect.height/2;
+  const worldX = vbX + (ox/rect.width)*vbW;
+  const worldY = vbY + (oy/rect.height)*vbH;
+  const newZoom = Math.min(MAP_MAX_ZOOM, Math.max(MAP_MIN_ZOOM, currentMapZoom()*factor));
+  const newW = NYC_VBW/newZoom, newH = NYC_VBH/newZoom;
+  const newX = worldX - (ox/rect.width)*newW;
+  const newY = worldY - (oy/rect.height)*newH;
+  setViewBox(newX, newY, newW, newH);
 }
 function mapZoomIn(){ zoomMapBy(1.3); }
 function mapZoomOut(){ zoomMapBy(1/1.3); }
@@ -1685,8 +1690,7 @@ function renderMapView(){
       <text class="maplabel" x="${a.x}" y="${a.y+6}" style="font-size:16px;">${day.num}</text>
     </g>`;
   }).join('');
-  wrap.innerHTML = `<div class="mapzoomlayer" id="mapzoomlayer">
-    <svg width="${NYC_VBW}" height="${NYC_VBH}" viewBox="0 0 ${NYC_VBW} ${NYC_VBH}" xmlns="http://www.w3.org/2000/svg">
+  wrap.innerHTML = `<svg id="mapsvg" viewBox="0 0 ${NYC_VBW} ${NYC_VBH}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <clipPath id="manhattanClip"><path d="${NYC_BOROUGHS.Manhattan}"/></clipPath>
       </defs>
@@ -1698,7 +1702,6 @@ function renderMapView(){
       ${areasHtml}
       ${markersHtml}
     </svg>
-  </div>
   <div class="mapctrls">
     <button class="mapctrlbtn" onclick="mapZoomIn()" title="Nagyítás">+</button>
     <button class="mapctrlbtn" onclick="mapZoomOut()" title="Kicsinyítés">−</button>
@@ -1738,7 +1741,7 @@ let mapPanZoomSetup = false;
 function setupMapPanZoom(wrap){
   if(mapPanZoomSetup) return;
   mapPanZoomSetup = true;
-  let dragging=false, dragStartX=0, dragStartY=0, panStartX=0, panStartY=0, dragDist=0;
+  let dragging=false, dragStartX=0, dragStartY=0, startVbX=0, startVbY=0, dragDist=0;
   wrap.addEventListener('wheel', e=>{
     e.preventDefault();
     const rect = wrap.getBoundingClientRect();
@@ -1747,16 +1750,17 @@ function setupMapPanZoom(wrap){
   wrap.addEventListener('pointerdown', e=>{
     dragging = true; dragDist = 0;
     dragStartX = e.clientX; dragStartY = e.clientY;
-    panStartX = mapPanX; panStartY = mapPanY;
+    startVbX = vbX; startVbY = vbY;
     wrap.classList.add('grabbing');
     try{ wrap.setPointerCapture(e.pointerId); }catch(err){}
   });
   wrap.addEventListener('pointermove', e=>{
     if(!dragging) return;
+    const rect = wrap.getBoundingClientRect();
     const dx = e.clientX-dragStartX, dy = e.clientY-dragStartY;
     dragDist = Math.max(dragDist, Math.abs(dx), Math.abs(dy));
-    mapPanX = panStartX + dx; mapPanY = panStartY + dy;
-    applyMapTransform();
+    const worldDx = dx * (vbW/rect.width), worldDy = dy * (vbH/rect.height);
+    setViewBox(startVbX-worldDx, startVbY-worldDy, vbW, vbH);
   });
   function endDrag(){
     dragging = false;
