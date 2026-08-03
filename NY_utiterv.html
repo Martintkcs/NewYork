@@ -931,7 +931,7 @@ function renderBudget(){
    → URL, kb. "https://PROJEKTNEV-default-rtdb.firebaseio.com" formában).
    Amíg üres, a szinkron ki van kapcsolva, az app localStorage-only marad.
    ============================================================ */
-const SYNC_DB_URL = "";
+const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
 let syncEnabled = !!SYNC_DB_URL;
