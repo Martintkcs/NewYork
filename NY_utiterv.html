@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NY Express">
 <meta name="mobile-web-app-capable" content="yes">
-<title>NY EXPRESS · Úti terv 2026.09.16–28.</title>
+<title>NY EXPRESS · Úti terv 2026.09.16–27.</title>
 <style>
 :root{
   --black:#0a0a0a; --paper:#f3efe4; --paper2:#ffffff; --ink:#141414;
@@ -19,7 +19,7 @@
   --alert:#ff6319; --alertbg:#fff2e2;
   --day1:#4d5357; --day2:#ee352e; --day3:#00933c; --day4:#fccc0a; --day5:#0039a6;
   --day6:#ff6319; --day7:#996633; --day8:#b933ad; --day9:#6cbe45; --day10:#a7a9ac;
-  --day11:#00add0; --day12:#808183; --day13:#4d5357;
+  --day11:#00add0; --day12:#808183;
 }
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
@@ -297,7 +297,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     <div class="bullet">NY</div>
     <div>
       <div class="brandtitle">NEW YORK <span>EXPRESS</span></div>
-      <div class="brandsub">Takács Martin · 2026.09.16–28. · 13 megálló, egy körút</div>
+      <div class="brandsub">Takács Martin · 2026.09.16–27. · 12 megálló, egy körút</div>
     </div>
     <button class="darktoggle" id="darkToggleBtn" onclick="toggleDarkMode()" title="Sötét/világos mód" style="margin-left:auto;">🌙</button>
   </div>
@@ -317,7 +317,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <div class="view" id="view-overview">
   <div class="sign">
     <h2><span class="em">🚦</span>Indulás előtt</h2>
-    <p>13 nap, 12 éjszaka. Ez nem egy szokásos PDF-es útiterv — ez egy <b>élő útvonaltérkép</b>: kattints egy állomásra (napra) fent, pipáld ki amit láttatok, ha megéheztek húzz egyet az étterem-automatából, és nyisd meg a napi útvonalat egyenesen Google Mapsben. Minden pipa és választás a böngésződben marad elmentve.</p>
+    <p>12 nap, 11 éjszaka. Ez nem egy szokásos PDF-es útiterv — ez egy <b>élő útvonaltérkép</b>: kattints egy állomásra (napra) fent, pipáld ki amit láttatok, ha megéheztek húzz egyet az étterem-automatából, és nyisd meg a napi útvonalat egyenesen Google Mapsben. Minden pipa és választás a böngésződben marad elmentve.</p>
     <div class="countdown" id="countdown"></div>
     <button class="routebtn" id="jumpTodayBtn" onclick="jumpToToday()" style="margin-top:0;">📅 Ugrás a mai napra</button>
     <div class="pillrow">
@@ -373,10 +373,10 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <button class="shufflebtn" style="background:#999;color:#fff;" onclick="setAllMapDays(false)">🚫 Mind elrejt</button>
     </div>
     <div class="mapsvgwrap" id="mapsvgwrap"></div>
-    <div class="note" style="margin-top:8px;">A <b>Coney Island</b> (10. nap, Astoria párja) jóval délebbre van, az alap nagyításnál a térkép alsó szélén túl esik — nyomd meg a ⛶ gombot, hogy lásd. A 12. nap (Pótnap) rugalmas, nincs fix területe — amit kihagytatok, azt pótoljátok, vagy induljatok Boston/DC felé. A 13. nap reggel még a szálláson van, este pedig JFK-re megy — ld. külön a Napi tervben.</div>
+    <div class="note" style="margin-top:8px;">A <b>Coney Island</b> (10. nap, Astoria párja) jóval délebbre van, az alap nagyításnál a térkép alsó szélén túl esik — nyomd meg a ⛶ gombot, hogy lásd. A 12. nap (utolsó nap) reggel még a szálláson van, aztán amit kihagytatok azt pótolja, este pedig JFK-re megy 21:50-es indulással — ld. külön a Napi tervben.</div>
   </div>
   <div class="sign">
-    <h2><span class="em">📋</span>Jelmagyarázat — ki/be kapcsolható, mind a 13 nap</h2>
+    <h2><span class="em">📋</span>Jelmagyarázat — ki/be kapcsolható, mind a 12 nap</h2>
     <div id="maplegend"></div>
   </div>
 </div>
@@ -503,16 +503,16 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <!-- ============ BOSTON/DC ============ -->
 <div class="view" id="view-extra">
   <div class="sign">
-    <h2><span class="em">🚆</span>Boston / Washington DC — csak ha marad időtök</h2>
+    <h2><span class="em">🚆</span>Boston / Washington DC — csak tájékoztató, ebbe az útba már nem fér bele</h2>
     <div class="tablewrap"><table>
       <tr><th>Város</th><th>Vonat</th><th>Busz</th><th>Repülő</th></tr>
       <tr><td>Boston</td><td>~3,5–4,5 óra</td><td>~4–4,5 óra</td><td>~1,5 óra</td></tr>
       <tr><td>Washington DC</td><td>~3–3,5 óra</td><td>~4–4,5 óra</td><td>~1,5 óra</td></tr>
     </table></div>
-    <div class="alertsign"><b>Egynapos kiruccanás nem reális</b><p>Oda-vissza 7-9 óra csak az utazás. Ha belefér, szánjatok rá min. 2 napot — legreálisabban a 12. nap (szept 27) körül, ha a 11. nap végére mindent láttatok, amit akartatok.</p></div>
+    <div class="alertsign"><b>Nincs már hozzá szabad nap</b><p>Mivel a hazaút 09.27 estére (nem 09.28-ra) került, a korábbi pótnap megszűnt — a 12. nap már a kijelentkezés + hazautazás napja, nem egy szabad nap. Egynapos kiruccanás egyébként sem reális (oda-vissza 7-9 óra csak az utazás), min. 2 teljes nap kellene hozzá, ami ebbe a 12 napos körbe már nem fér bele. Ez a lista csak tájékoztató, ha egy következő, hosszabb útnál terveznétek ilyet.</p></div>
     <h3 class="sectiontitle">Boston / Washington DC — a listádon (pipálható)</h3>
     <div id="extralist"></div>
-    <div class="alertsign"><b>Szándékosan kihagyva</b><p><b>Battleship New Jersey Museum & Memorial</b> (Camden, NJ) — Philadelphia mellett van, kb. 1,5–2 órányira New Yorktól, ezért ez nem fér bele a 12 napos NY-tervbe, még pótnapon sem reális. Ha mégis érdekel, csak egy külön Philadelphia-kiruccanással együtt éri meg.</p></div>
+    <div class="alertsign"><b>Szándékosan kihagyva</b><p><b>Battleship New Jersey Museum & Memorial</b> (Camden, NJ) — Philadelphia mellett van, kb. 1,5–2 órányira New Yorktól, ezért ez nem fér bele ebbe a 12 napos NY-tervbe. Ha mégis érdekel, csak egy külön Philadelphia-kiruccanással együtt éri meg.</p></div>
   </div>
 </div>
 
@@ -724,16 +724,10 @@ const days = [
   {h:"11:00–18:00", items:[{n:"Smorgasburg", d:"Williamsburg waterfront street-food piac"}]},
   {h:"Este", items:[{n:"Westlight Rooftop", d:"✨ saját tipp (nincs a listádon) — a William Vale szálloda tetején, ikonikus Manhattan-panoráma, foglalás ajánlott", q:"Westlight Rooftop Bar, Brooklyn"}]}
  ]},
-{id:"d12", num:12, date:"09.27, Vasárnap", title:"Pótnap / pihenő", color:"var(--day12)", special:null, zones:["Bárhol"],
- blocks:[
-  {h:"Egész nap", items:[{n:"Pótold, ami kimaradt a listából", loc:false},{n:"Long Island / Hampton-vidék", d:"csak ha van kedvetek — messze van, autó kell", q:"Long Island, New York"}]},
-  {h:"Döntési pont", items:[{n:"Ha gyorsabban végeztetek: fontoljátok meg Boston/DC-t (ld. külön fül)", loc:false}]},
-  {h:"Este (ha még van energiátok)", items:[{n:"Válasszatok egy kimaradt rooftop bárt", d:"✨ pl. 230 Fifth, Westlight, Overstory, Bar SixtyFive, Watermark Bar vagy Bemelmans Bar a fentiek közül, amelyiket még nem próbáltátok", loc:false}]}
- ]},
-{id:"d13", num:13, date:"09.28, Hétfő", title:"Utolsó nap / hazaút", color:"var(--day13)", special:"🧳 21:50 JFK indulás", zones:["Midtown"],
+{id:"d12", num:12, date:"09.27, Vasárnap", title:"Utolsó nap / hazaút", color:"var(--day12)", special:"🧳 21:50 JFK indulás", zones:["Midtown"],
  blocks:[
   {h:"Reggel", items:[{n:"Kijelentkezés a szállásról", loc:false},{n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false}]},
-  {h:"Nappal", items:[{n:"Utolsó séták, bevásárlás", loc:false}]},
+  {h:"Délelőtt–délután", items:[{n:"Pótold, ami kimaradt a listából", loc:false},{n:"Utolsó séták, bevásárlás", loc:false}]},
   {h:"~17:30–18:00", items:[{n:"Csomagok felvétele", loc:false},{n:"Indulás JFK felé", q:"John F. Kennedy International Airport, New York"}]},
   {h:"Este", items:[{n:"Ma este már nincs külön program — 21:50-kor a levegőben lesztek, irány haza", loc:false}]}
  ]}
@@ -932,7 +926,7 @@ function renderBudget(){
    ============================================================ */
 (function(){
   const target = new Date("2026-09-16T13:50:00-04:00");
-  const end = new Date("2026-09-28T22:00:00-04:00");
+  const end = new Date("2026-09-27T22:00:00-04:00");
   const now = new Date();
   const el = document.getElementById('countdown');
   const diff = target - now;
@@ -958,7 +952,7 @@ function todayTripDayId(){
 }
 function jumpToToday(){
   const id = todayTripDayId();
-  if(!id){ alert('Az utazás 2026.09.16–28. között lesz — a mai dátum most nem esik ebbe az időszakba.'); return; }
+  if(!id){ alert('Az utazás 2026.09.16–27. között lesz — a mai dátum most nem esik ebbe az időszakba.'); return; }
   goto('view-days'); showDay(id);
 }
 
@@ -1137,7 +1131,7 @@ days.forEach((day,i)=>{
 
   let html = `<div class="staysign" style="background:${day.color}">
     <div class="celebrate" id="confetti-${day.id}"></div>
-    <div class="daylabel">${day.date} · ${i+1}. / 13. nap</div>
+    <div class="daylabel">${day.date} · ${i+1}. / ${days.length}. nap</div>
     <div class="daytitle">${day.title}</div>
     ${day.special?`<div class="specialflag">${day.special}</div>`:''}
   </div>`;
@@ -1562,7 +1556,7 @@ const mapAreas = [
 // North Bergen (szállás) — a valódi koordinátáján jelölve, most már a New Jersey
 // szárazföld-kontúron belül
 const mapMarkers = [
-  {dayId:"d1", label:"Szállás (North Bergen, NJ)", x:244.5, y:263.4}
+  {dayId:"d1", label:"Szállás (North Bergen, NJ)", x:197.9, y:305.1}
 ];
 // tágabb városrész-feliratok háttérként — ugyanabból a valós határ-adatbázisból (reprezentátív pont minden szomszédsághoz)
 const NYC_HOOD_LABELS = [
@@ -1741,32 +1735,73 @@ let mapPanZoomSetup = false;
 function setupMapPanZoom(wrap){
   if(mapPanZoomSetup) return;
   mapPanZoomSetup = true;
+  // aktív érintések nyomon követése pointerId szerint — ha 2 ujj van lent, csippentős
+  // zoom+pan, ha 1, sima húzás. A pointer eventek egyaránt lefednek egeret és érintést.
+  const activePointers = new Map();
   let dragging=false, dragStartX=0, dragStartY=0, startVbX=0, startVbY=0, dragDist=0;
+  let pinchPrevDist=0, pinchPrevMid=null;
+  function ptDist(a,b){ return Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY); }
+  function ptMid(a,b){ return {clientX:(a.clientX+b.clientX)/2, clientY:(a.clientY+b.clientY)/2}; }
+  function startSinglePan(clientX, clientY){
+    dragging = true;
+    dragStartX = clientX; dragStartY = clientY;
+    startVbX = vbX; startVbY = vbY;
+    wrap.classList.add('grabbing');
+  }
   wrap.addEventListener('wheel', e=>{
     e.preventDefault();
     const rect = wrap.getBoundingClientRect();
     zoomMapBy(e.deltaY < 0 ? 1.15 : 1/1.15, e.clientX-rect.left, e.clientY-rect.top);
   }, {passive:false});
   wrap.addEventListener('pointerdown', e=>{
-    dragging = true; dragDist = 0;
-    dragStartX = e.clientX; dragStartY = e.clientY;
-    startVbX = vbX; startVbY = vbY;
-    wrap.classList.add('grabbing');
+    activePointers.set(e.pointerId, {clientX:e.clientX, clientY:e.clientY});
     try{ wrap.setPointerCapture(e.pointerId); }catch(err){}
+    if(activePointers.size===2){
+      dragging = false;
+      const pts = [...activePointers.values()];
+      pinchPrevDist = ptDist(pts[0], pts[1]);
+      pinchPrevMid = ptMid(pts[0], pts[1]);
+      dragDist = 999;
+    } else if(activePointers.size===1){
+      dragDist = 0;
+      startSinglePan(e.clientX, e.clientY);
+    }
   });
   wrap.addEventListener('pointermove', e=>{
-    if(!dragging) return;
+    if(!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, {clientX:e.clientX, clientY:e.clientY});
     const rect = wrap.getBoundingClientRect();
+    if(activePointers.size>=2){
+      const pts = [...activePointers.values()].slice(0,2);
+      const d = ptDist(pts[0], pts[1]);
+      const m = ptMid(pts[0], pts[1]);
+      if(pinchPrevDist>0 && d>0){
+        zoomMapBy(d/pinchPrevDist, m.clientX-rect.left, m.clientY-rect.top);
+        const worldDx = (m.clientX-pinchPrevMid.clientX) * (vbW/rect.width);
+        const worldDy = (m.clientY-pinchPrevMid.clientY) * (vbH/rect.height);
+        setViewBox(vbX-worldDx, vbY-worldDy, vbW, vbH);
+      }
+      pinchPrevDist = d; pinchPrevMid = m;
+      return;
+    }
+    if(!dragging) return;
     const dx = e.clientX-dragStartX, dy = e.clientY-dragStartY;
     dragDist = Math.max(dragDist, Math.abs(dx), Math.abs(dy));
     const worldDx = dx * (vbW/rect.width), worldDy = dy * (vbH/rect.height);
     setViewBox(startVbX-worldDx, startVbY-worldDy, vbW, vbH);
   });
-  function endDrag(){
-    dragging = false;
-    wrap.classList.remove('grabbing');
-    window.__mapWasDragging = dragDist > 6;
-    setTimeout(()=>{ window.__mapWasDragging = false; }, 50);
+  function endDrag(e){
+    if(e) activePointers.delete(e.pointerId);
+    if(activePointers.size<2) pinchPrevDist = 0;
+    if(activePointers.size===1){
+      const p = [...activePointers.values()][0];
+      startSinglePan(p.clientX, p.clientY);
+    } else if(activePointers.size===0){
+      dragging = false;
+      wrap.classList.remove('grabbing');
+      window.__mapWasDragging = dragDist > 6;
+      setTimeout(()=>{ window.__mapWasDragging = false; }, 50);
+    }
   }
   wrap.addEventListener('pointerup', endDrag);
   wrap.addEventListener('pointercancel', endDrag);
