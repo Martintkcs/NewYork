@@ -1069,13 +1069,15 @@ function locModalUrl(name, area){
 function openLocModal(idx){
   const r = restaurants[idx];
   if(!r) return;
+  const allUrl = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(r.n+", New York");
+  const allBtn = `<a class="shufflebtn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#000;color:#fff;margin-bottom:10px;box-sizing:border-box;text-decoration:none;" href="${allUrl}" target="_blank" rel="noopener">🗺️ Mind a(z) ${r.locs.length} helyszín megnyitása Google Mapsben</a>`;
   const rows = r.locs.map(z=>`<a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="${locModalUrl(r.n,z)}" target="_blank" rel="noopener">
     <div class="ticket-main"><span><span class="tname">${z}</span><span class="tdesc">Megnyitás Google Mapsben ebben a városrészben</span></span></div>
     <span class="pinbtn" style="pointer-events:none;">📍</span>
   </a>`).join('');
   const modal = document.getElementById('locModal');
   modal.querySelector('.locModalTitle').textContent = r.n+' — ismert helyszínek';
-  modal.querySelector('.locModalBody').innerHTML = rows;
+  modal.querySelector('.locModalBody').innerHTML = allBtn + rows;
   modal.style.display = 'flex';
 }
 function closeLocModal(e){
