@@ -300,6 +300,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <div class="brandsub">Takács Martin · 2026.09.16–27. · 12 megálló, egy körút</div>
     </div>
     <span id="syncBadge" onclick="forceResync()" title="Kattints az újraszinkronizáláshoz" style="display:none;cursor:pointer;margin-left:auto;font-size:.68rem;color:#bbb;align-items:center;padding:0 8px;"></span>
+    <button class="darktoggle" onclick="openGlobalSearch()" title="Keresés mindenhol">🔍</button>
     <button class="darktoggle" id="darkToggleBtn" onclick="toggleDarkMode()" title="Sötét/világos mód">🌙</button>
   </div>
   <div class="route-strip">
@@ -577,6 +578,17 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <button class="locModalClose" onclick="closeLocModal(event)">✕</button>
     </div>
     <div class="locModalBody"></div>
+  </div>
+</div>
+
+<div id="globalSearchModal" class="locModal" onclick="closeGlobalSearch(event)">
+  <div class="locModalCard" style="max-width:480px;">
+    <div class="locModalHead">
+      <b class="locModalTitle">🔍 Keresés — mindenhol</b>
+      <button class="locModalClose" onclick="closeGlobalSearch()">✕</button>
+    </div>
+    <input class="searchbar" id="globalSearchInput" placeholder="Látnivaló, étterem, csomag, program…" oninput="renderGlobalSearch()" style="margin-bottom:0;">
+    <div class="locModalBody" id="globalSearchResults" style="margin-top:10px;"></div>
   </div>
 </div>
 
@@ -962,6 +974,10 @@ function syncWriteAnytimeList(){
   if(!syncEnabled) return;
   fetch(SYNC_PATH + "/anytimeList.json", { method:"PUT", body: JSON.stringify(anytimeOptions) }).catch(()=>{});
 }
+function syncWritePacking(){
+  if(!syncEnabled) return;
+  fetch(SYNC_PATH + "/packing.json", { method:"PUT", body: JSON.stringify(packing) }).catch(()=>{});
+}
 function applyRemoteState(remote){
   if(!remote) return;
   if(remote.checks && typeof remote.checks === 'object'){
@@ -973,6 +989,7 @@ function applyRemoteState(remote){
     if(typeof renderFood==='function') renderFood();
     if(typeof days!=='undefined') days.forEach(d=>{ if(typeof renderDayFood==='function') renderDayFood(d.id); });
     if(typeof refreshAllAnytimeBlocks==='function') refreshAllAnytimeBlocks();
+    if(typeof renderPacking==='function') renderPacking();
   }
   if(Array.isArray(remote.budget)){
     budgetEntries = remote.budget;
@@ -983,6 +1000,11 @@ function applyRemoteState(remote){
     anytimeOptions = remote.anytimeList;
     localStorage.setItem('ny2026_anytimeList', JSON.stringify(anytimeOptions));
     if(typeof refreshAllAnytimeBlocks==='function') refreshAllAnytimeBlocks();
+  }
+  if(Array.isArray(remote.packing)){
+    packing = remote.packing;
+    localStorage.setItem('ny2026_packingList', JSON.stringify(packing));
+    if(typeof renderPacking==='function') renderPacking();
   }
 }
 function initSync(){
@@ -1000,6 +1022,7 @@ function initSync(){
         else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
         else if(path === "/budget") applyRemoteState({budget: val});
         else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
+        else if(path === "/packing") applyRemoteState({packing: val});
         else if(path === "/checks" ) applyRemoteState({checks: val});
       }catch(err){}
     }
@@ -1024,9 +1047,13 @@ function pushFullLocalSnapshot(){
   if(typeof anytimeOptions!=='undefined') anytimeOptions.forEach(o=>{
     const v = localStorage.getItem(atCheckedKey(o.id)); if(v!==null) checks['anytime-'+o.id]=v;
   });
+  if(typeof packing!=='undefined') packing.forEach(cat=>cat.items.forEach(it=>{
+    const v = localStorage.getItem('ny2026_pack-'+it.id); if(v!==null) checks['pack-'+it.id]=v;
+  }));
   if(Object.keys(checks).length) fetch(SYNC_PATH+"/checks.json", {method:"PATCH", body: JSON.stringify(checks)}).catch(()=>{});
   syncWriteBudget();
   syncWriteAnytimeList();
+  syncWritePacking();
 }
 window.addEventListener('online', pushFullLocalSnapshot);
 function forceResync(){
@@ -1198,6 +1225,96 @@ function closeLocModal(e){
   if(e && e.target && e.target.id!=='locModal' && !e.target.classList.contains('locModalClose')) return;
   document.getElementById('locModal').style.display = 'none';
 }
+
+/* ============================================================
+   GLOBÁLIS KERESÉS — látnivalók, éttermek, csomaglista, "bármikor" programok
+   egyszerre, egy helyről kereshetők, kattintásra a megfelelő fülre/napra ugrik.
+   ============================================================ */
+function openGlobalSearch(){
+  document.getElementById('globalSearchModal').style.display = 'flex';
+  const input = document.getElementById('globalSearchInput');
+  input.value = '';
+  renderGlobalSearch();
+  setTimeout(()=>input.focus(), 50);
+}
+function closeGlobalSearch(e){
+  if(e && e.target && e.target.id!=='globalSearchModal' && !e.target.classList.contains('locModalClose')) return;
+  document.getElementById('globalSearchModal').style.display = 'none';
+}
+function jumpToSight(dayId){ closeGlobalSearch(); goto('view-days'); showDay(dayId); }
+function jumpToRestaurant(idx){
+  closeGlobalSearch(); goto('view-food');
+  const input = document.getElementById('foodsearch');
+  input.value = restaurants[idx].n; renderFood();
+}
+function jumpToPacking(){ closeGlobalSearch(); goto('view-pack'); }
+function jumpToAnytime(){ closeGlobalSearch(); goto('view-days'); showDay(days[currentDayIndex] ? days[currentDayIndex].id : days[0].id); }
+function jumpToBudget(){ closeGlobalSearch(); goto('view-budget'); }
+function escHtml(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function renderGlobalSearch(){
+  const q = document.getElementById('globalSearchInput').value.toLowerCase().trim();
+  const body = document.getElementById('globalSearchResults');
+  if(!q){ body.innerHTML = '<div class="note">Kezdj el gépelni — mindenhol keres egyszerre: napi terv, éttermek, csomaglista, "bármikor" programok.</div>'; return; }
+
+  const sightHits = [];
+  days.forEach(day=> day.blocks.forEach(block=> block.items.forEach(item=>{
+    const text = (item.n+' '+(item.d||'')+' '+day.title).toLowerCase();
+    if(text.includes(q)) sightHits.push({item, day});
+  })));
+
+  const restHits = restaurants
+    .map((r,idx)=>({r, idx}))
+    .filter(({r})=> (r.n+' '+r.t).toLowerCase().includes(q));
+
+  const packHits = [];
+  packing.forEach(cat=> cat.items.forEach(it=>{
+    if(it.text.toLowerCase().includes(q)) packHits.push({cat, item:it});
+  }));
+
+  const anytimeHits = anytimeOptions.filter(o=> (o.n+' '+(o.d||'')).toLowerCase().includes(q));
+
+  const MAXSHOW = 8;
+  function section(title, items, renderRow){
+    if(items.length===0) return '';
+    const shown = items.slice(0, MAXSHOW);
+    const more = items.length > MAXSHOW ? `<div class="note">+ még ${items.length-MAXSHOW} találat — pontosítsd a keresést</div>` : '';
+    return `<h4 style="margin:12px 0 6px;font-size:.78rem;text-transform:uppercase;color:var(--muted);">${title} (${items.length})</h4>`
+      + shown.map(renderRow).join('') + more;
+  }
+
+  let html = '';
+  html += section('📅 Napi terv', sightHits, ({item, day})=>`
+    <a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="#" onclick="event.preventDefault();jumpToSight('${day.id}')">
+      <div class="ticket-main"><span><span class="tname">${escHtml(item.n)}</span><span class="tdesc">${day.num}. nap · ${escHtml(day.title)}</span></span></div>
+      <span class="pinbtn" style="pointer-events:none;background:${day.color};">📅</span>
+    </a>`);
+  html += section('🍔 Éttermek', restHits, ({r, idx})=>`
+    <a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="#" onclick="event.preventDefault();jumpToRestaurant(${idx})">
+      <div class="ticket-main"><span><span class="tname">${escHtml(r.n)}</span><span class="tdesc">${escHtml(r.t)}</span></span></div>
+      <span class="pinbtn" style="pointer-events:none;">🍔</span>
+    </a>`);
+  html += section('🧳 Csomaglista', packHits, ({cat, item})=>`
+    <a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="#" onclick="event.preventDefault();jumpToPacking()">
+      <div class="ticket-main"><span><span class="tname">${escHtml(item.text)}</span><span class="tdesc">${escHtml(cat.cat)}</span></span></div>
+      <span class="pinbtn" style="pointer-events:none;">🧳</span>
+    </a>`);
+  html += section('✨ Bármikor programok', anytimeHits, (o)=>`
+    <a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="#" onclick="event.preventDefault();jumpToAnytime()">
+      <div class="ticket-main"><span><span class="tname">${escHtml(o.n)}</span>${o.d?`<span class="tdesc">${escHtml(o.d)}</span>`:''}</span></div>
+      <span class="pinbtn" style="pointer-events:none;">✨</span>
+    </a>`);
+
+  if(!html) html = '<div class="note">Nincs találat.</div>';
+  body.innerHTML = html;
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    const gm = document.getElementById('globalSearchModal');
+    if(gm && gm.style.display==='flex') closeGlobalSearch();
+    const lm = document.getElementById('locModal');
+    if(lm && lm.style.display==='flex') closeLocModal();
+  }
+});
 
 function itemQuery(item){
   // ha van kézzel megadott q (pontos cím/keresés), azt VÁLTOZTATÁS NÉLKÜL használjuk —
@@ -1481,6 +1598,7 @@ function renderPacking(){
 function onPackCheck(pid){
   const el = document.getElementById(pid);
   localStorage.setItem('ny2026_'+pid, el.checked?'1':'0');
+  syncWriteCheck(pid, el.checked?'1':'0');
   const row = document.getElementById('prow-'+pid); if(row) row.classList.toggle('checked', el.checked);
 }
 function addPackItem(ci){
@@ -1488,6 +1606,7 @@ function addPackItem(ci){
   if(!text || !text.trim()) return;
   packing[ci].items.push({id:'p'+Date.now()+Math.floor(Math.random()*1000), text:text.trim()});
   savePacking();
+  syncWritePacking();
   renderPacking();
 }
 function editPackItem(ci, id){
@@ -1497,6 +1616,7 @@ function editPackItem(ci, id){
   if(text===null || !text.trim()) return;
   item.text = text.trim();
   savePacking();
+  syncWritePacking();
   renderPacking();
 }
 function deletePackItem(ci, id){
@@ -1504,6 +1624,7 @@ function deletePackItem(ci, id){
   localStorage.removeItem('ny2026_pack-'+id);
   packing[ci].items = packing[ci].items.filter(it=>it.id!==id);
   savePacking();
+  syncWritePacking();
   renderPacking();
 }
 function addPackCategory(){
@@ -1511,6 +1632,7 @@ function addPackCategory(){
   if(!name || !name.trim()) return;
   packing.push({cat:name.trim(), items:[]});
   savePacking();
+  syncWritePacking();
   renderPacking();
 }
 function deletePackCategory(ci){
@@ -1518,6 +1640,7 @@ function deletePackCategory(ci){
   packing[ci].items.forEach(it=> localStorage.removeItem('ny2026_pack-'+it.id));
   packing.splice(ci,1);
   savePacking();
+  syncWritePacking();
   renderPacking();
 }
 renderPacking();
