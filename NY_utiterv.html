@@ -557,6 +557,23 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     <p style="margin-top:0;color:var(--muted);font-size:.86rem;">New Yorkban az árcédulán/étlapon lévő ár <b>SOHA nem tartalmazza az adót</b> — mindig hozzáadódik a pénztárnál/számlánál. Nincs adó-visszaigénylés (VAT refund) turistaként, ellentétben Európával. Alant kategóriánként írd be az összeget, és automatikusan megjelenik mellette az adóval együtti végösszeg — az ℹ️ gombra kattintva pedig a pontos szabály olvasható.</p>
     <div class="countdown" style="font-size:1rem;background:var(--black);color:#fff;box-shadow:4px 4px 0 var(--taxi);">🗽 NYC összesített forgalmi adó (általános): <b>8,875%</b> — 4% állami + 4,5% városi + 0,375% MTA-felár</div>
   </div>
+
+  <div class="foodmachine">
+    <h4>💵 Önálló borravaló-számológép</h4>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span>Számla összege $</span>
+      <input type="number" min="0" step="0.01" inputmode="decimal" id="tipCalcBase" placeholder="0.00" oninput="calcTipStandalone()"
+        style="width:90px;padding:8px;border:1.5px solid #555;border-radius:6px;background:#1e1e1e;color:#fff;">
+      <span>Borravaló</span>
+      <input type="number" min="0" max="100" step="1" id="tipCalcPct" value="18" oninput="calcTipStandalone()"
+        style="width:56px;padding:8px;border:1.5px solid #555;border-radius:6px;background:#1e1e1e;color:#fff;">
+      <span>%</span>
+      <span>→ borravaló: <b id="tipCalcAmt" style="color:var(--taxi);">$0.00</b></span>
+      <span>· mindösszesen: <b id="tipCalcTotal" style="color:var(--taxi);">$0.00</b></span>
+    </div>
+    <div class="note" style="color:#999;">Bármilyen számlára használható (nem csak étteremre) — alapból 18%-ra van állítva, írd át 10–25% közé ízlés/szolgáltatás szerint. Ez a teljes, tetszőleges célra használható kalkulátor — az egyes kategóriáknál lent (éttermi kaja, szépségszolgáltatás, taxi) saját beépített borravaló-mezőt is találsz, ahol a kategória szokásos adójával együtt jön ki a végösszeg.</div>
+  </div>
+
   <div id="taxwrap"></div>
   <div class="alertsign"><b>Borravaló ≠ adó</b><p>A fenti adók a vételár részei, a pénztárnál automatikusan hozzáadódnak. A borravaló (tip) ezen <i>felül</i> jön, külön döntés — étteremnél 18–20%, kávézónál/bárnál 10–15%, ld. a Közlekedés & tippek fület.</p></div>
 </div>
@@ -965,8 +982,8 @@ function renderBudget(){
    ============================================================ */
 const taxCategories = [
   {icon:"🍽️", name:"Éttermi kaja, bár, kiszállítás/elvitel", mode:"standard", rate:0.08875,
-   rateLabel:"8,875% mindig",
-   info:"Mindig a teljes 8,875%-os NYC-s forgalmi adó vonatkozik rá — akár helyben eszel, akár elviszed, akár kiszállítást kérsz. Nincs alsó összeghatár, minden tételre érvényes."},
+   rateLabel:"8,875% + szokásos borravaló", tip:true, tipDefault:18,
+   info:"Mindig a teljes 8,875%-os NYC-s forgalmi adó vonatkozik rá — akár helyben eszel, akár elviszed, akár kiszállítást kérsz. Nincs alsó összeghatár, minden tételre érvényes. Borravaló étteremben 18–20%, kávézónál/bárnál 10–15% szokás — a borravalót a legtöbb helyen az ADÓ ELŐTTI (nettó) összegre szokás számolni, nem a végösszegre, ezt teszi ez a mező is."},
   {icon:"🛒", name:"Élelmiszer bevásárlás (nyers, otthoni fogyasztásra)", mode:"exempt", rate:0.08875,
    rateLabel:"alapból adómentes*",
    info:"A legtöbb alap élelmiszer (kenyér, tejtermék, friss zöldség/gyümölcs, csomagolt élelmiszer) adómentes New Yorkban. KIVÉTEL, ami a boltban is teljes 8,875%-os: cukorka/édesség, üdítő/szénsavas ital (a víz és a legtöbb gyümölcslé nem számít ide), alkohol, és bármi felmelegített vagy evőeszközzel/tálcán felszolgált étel (pl. a bolti deli-pult kész ételei). A lenti mezőbe a tisztán nyers/csomagolt vásárlásod összegét írd."},
@@ -981,7 +998,19 @@ const taxCategories = [
    info:"A teljes 8,875%, ugyanúgy mint az általános áruknál. Bárban/étteremben helyben fogyasztott alkoholra az éttermi kaja szabályai vonatkoznak (szintén 8,875%, csak más tétel alatt van a számlán)."},
   {icon:"🎁", name:"Ajándéktárgyak / egyéb általános vásárlás", mode:"standard", rate:0.08875,
    rateLabel:"8,875% mindig",
-   info:"A legtöbb egyéb tárgyi termékre (szuvenír, könyv, játék, kozmetikum, múzeumi bolt stb.) a sima 8,875% vonatkozik. Van néhány ritkán releváns kivétel (pl. bizonyos gyógyszerek, újságok/folyóiratok) — turistaként ezekkel valószínűleg nem találkozol."}
+   info:"A legtöbb egyéb tárgyi termékre (szuvenír, könyv, játék, kozmetikum, múzeumi bolt stb.) a sima 8,875% vonatkozik. Van néhány ritkán releváns kivétel (pl. bizonyos gyógyszerek, újságok/folyóiratok) — turistaként ezekkel valószínűleg nem találkozol."},
+  {icon:"🅿️", name:"Parkolás (Manhattanben, garázs/parkoló)", mode:"standard", rate:0.18375,
+   rateLabel:"18,375% (!) — csak Manhattanben", tip:false,
+   info:"Manhattanben a parkolás adója kiugróan magas: a szokásos 10,375%-os alap (4% állami + 6% városi parkolás-specifikus kulcs — ez magasabb, mint az általános 4,5%-os városi kulcs — + 0,375% MTA-felár) TETEJÉBE jön egy külön 8%-os manhattani parkolási pótadó, összesen 18,375%. A Bronxban, Brooklynban, Queensben és Staten Islanden nincs ez a pótadó, ott a sima 10,375% jár. Manhattani lakosoknak van adókedvezmény, turistáknak nincs."},
+  {icon:"🏨", name:"Szállodai szoba (ha külön foglalsz, nem a mostani szállásod)", mode:"hotel", rate:0.1475, flatFee:3.50,
+   rateLabel:"14,75% + $3,50/éjszaka", tip:false,
+   info:"8,875% forgalmi adó + 5,875% városi szállásfoglalási adó (occupancy tax) = 14,75% a szobaárból, PLUSZ egy fix $2/éjszaka városi és $1,50/éjszaka állami díj (összesen $3,50/éjszaka), szobánként — nem az összegtől függ. A lenti mezőbe egy ÉJSZAKA árát írd, a végösszeg is egy éjszakára jön ki (szorozd meg az éjszakák számával). A takarítónak szokás külön borravalót hagyni (kb. $2-5/éjszaka), az nincs ebben a számításban."},
+  {icon:"💇", name:"Szépségszolgáltatás (fodrász, spa, masszázs, tetkó)", mode:"standard", rate:0.045,
+   rateLabel:"4,5% + szokásos borravaló", tip:true, tipDefault:18,
+   info:"NYC-ben (máshol NY államban NEM!) ezekre a szolgáltatásokra csak a városi 4,5%-os helyi adó vonatkozik, az állami 4% és az MTA-felár NEM jár rá — ezért alacsonyabb a szokásos 8,875%-nál. A megvett termékekre (sampon, kozmetikum stb.) viszont a teljes 8,875% jár. Borravaló itt is szokás, kb. 15-20%."},
+  {icon:"🚕", name:"Taxi / Uber / Lyft", mode:"tiponly", rate:0,
+   rateLabel:"nincs elkülönített adó — a viteldíjban benne van", tip:true, tipDefault:18,
+   info:"A viteldíjban már benne vannak a különféle NYC-s pótdíjak (torlódási díj kb. $2,50-2,75, MTA-felár, fejlesztési díj stb.) — nincs itt külön, kiszámolható forgalmi adó, mint a boltos vásárlásnál. Borravaló itt is szokás: sárga taxinál kb. 15-20% készpénzben vagy a terminálon, Ubernél/Lyftnél az appban kérik rá utólag."}
 ];
 function renderTaxes(){
   const wrap = document.getElementById('taxwrap');
@@ -1003,6 +1032,13 @@ function renderTaxes(){
         </div>
         <a href="#" class="pinbtn" style="background:#555;flex:0 0 auto;" onclick="event.preventDefault();toggleTaxInfo(${i})" title="Infó — hogyan alkalmazódik ez az adó">ℹ️</a>
       </div>
+      ${c.tip ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);">
+        <span style="font-size:.82rem;color:var(--muted);">+ borravaló</span>
+        <input type="number" min="0" max="100" step="1" id="taxtip-${i}" value="${c.tipDefault||18}"
+          oninput="calcTaxRow(${i})" style="width:52px;padding:6px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper2);color:var(--ink);">
+        <span style="font-size:.82rem;">%</span>
+        <span style="font-size:.82rem;color:var(--muted);">→ +<b id="taxtipamt-${i}">$0.00</b> · mindösszesen: <b id="taxgrand-${i}" style="color:var(--ink);">$0.00</b></span>
+      </div>` : ''}
       <div class="note" id="taxinfo-${i}" style="display:none;margin-top:8px;">${c.info}</div>
     </div>`).join('');
 }
@@ -1011,16 +1047,38 @@ function calcTaxRow(i){
   const input = document.getElementById('taxin-'+i);
   const out = document.getElementById('taxout-'+i);
   const amt = parseFloat(input.value);
-  if(isNaN(amt) || amt<0){ out.textContent = '$0.00'; return; }
+  if(isNaN(amt) || amt<0){
+    out.textContent = '$0.00';
+    if(c.tip){ document.getElementById('taxtipamt-'+i).textContent='$0.00'; document.getElementById('taxgrand-'+i).textContent='$0.00'; }
+    return;
+  }
   let total;
   if(c.mode==='exempt') total = amt;
   else if(c.mode==='clothing') total = amt < 110 ? amt : amt * (1+c.rate);
+  else if(c.mode==='hotel') total = amt * (1+c.rate) + c.flatFee;
+  else if(c.mode==='tiponly') total = amt;
   else total = amt * (1+c.rate);
   out.textContent = '$'+total.toFixed(2);
+  if(c.tip){
+    const tipInput = document.getElementById('taxtip-'+i);
+    const tipPct = parseFloat(tipInput.value);
+    const tipAmt = (!isNaN(tipPct) && tipPct>=0) ? amt*(tipPct/100) : 0;
+    document.getElementById('taxtipamt-'+i).textContent = '$'+tipAmt.toFixed(2);
+    document.getElementById('taxgrand-'+i).textContent = '$'+(total+tipAmt).toFixed(2);
+  }
 }
 function toggleTaxInfo(i){
   const el = document.getElementById('taxinfo-'+i);
   if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+function calcTipStandalone(){
+  const base = parseFloat(document.getElementById('tipCalcBase').value);
+  const pct = parseFloat(document.getElementById('tipCalcPct').value);
+  const amtEl = document.getElementById('tipCalcAmt'), totalEl = document.getElementById('tipCalcTotal');
+  if(isNaN(base) || base<0){ amtEl.textContent='$0.00'; totalEl.textContent='$0.00'; return; }
+  const tip = (!isNaN(pct) && pct>=0) ? base*(pct/100) : 0;
+  amtEl.textContent = '$'+tip.toFixed(2);
+  totalEl.textContent = '$'+(base+tip).toFixed(2);
 }
 renderTaxes();
 
