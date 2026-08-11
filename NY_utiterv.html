@@ -550,6 +550,17 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
   <div id="budgetwrap"></div>
 </div>
 
+<!-- ============ TAXES ============ -->
+<div class="view" id="view-taxes">
+  <div class="sign">
+    <h2><span class="em">🧾</span>Adók New Yorkban</h2>
+    <p style="margin-top:0;color:var(--muted);font-size:.86rem;">New Yorkban az árcédulán/étlapon lévő ár <b>SOHA nem tartalmazza az adót</b> — mindig hozzáadódik a pénztárnál/számlánál. Nincs adó-visszaigénylés (VAT refund) turistaként, ellentétben Európával. Alant kategóriánként írd be az összeget, és automatikusan megjelenik mellette az adóval együtti végösszeg — az ℹ️ gombra kattintva pedig a pontos szabály olvasható.</p>
+    <div class="countdown" style="font-size:1rem;background:var(--black);color:#fff;box-shadow:4px 4px 0 var(--taxi);">🗽 NYC összesített forgalmi adó (általános): <b>8,875%</b> — 4% állami + 4,5% városi + 0,375% MTA-felár</div>
+  </div>
+  <div id="taxwrap"></div>
+  <div class="alertsign"><b>Borravaló ≠ adó</b><p>A fenti adók a vételár részei, a pénztárnál automatikusan hozzáadódnak. A borravaló (tip) ezen <i>felül</i> jön, külön döntés — étteremnél 18–20%, kávézónál/bárnál 10–15%, ld. a Közlekedés & tippek fület.</p></div>
+</div>
+
 <!-- ============ FULL CHECKLIST ============ -->
 <div class="view" id="view-checklist">
   <div class="sign">
@@ -939,6 +950,81 @@ function renderBudget(){
 }
 
 /* ============================================================
+   ADÓK (NYC forgalmi adó kategóriánként) — kutatással ellenőrzött szabályok
+   (NY State Dept. of Taxation and Finance, 2026-os adatok alapján):
+   - Általános NYC kombinált forgalmi adó: 8,875% (4% állami + 4,5% városi + 0,375% MTA-felár)
+   - Ruházat/cipő: TÉTELENKÉNT (nem a kosár összegén!) 110$ alatt teljesen adómentes
+     NYC-ben (mind az állami, mind a városi rész), 110$-tól a TELJES tételár után jár
+     a 8,875% (nem csak a 110$ feletti rész után — ez gyakori tévhit).
+   - Nyers/csomagolt élelmiszer otthoni fogyasztásra: alapból adómentes, DE cukorka,
+     üdítő/szénsavas ital, alkohol és bármi felmelegített/evőeszközzel felszolgált
+     a boltban is teljes áras (8,875%).
+   - Éttermi/vendéglátói kaja (helyben, elvitel, kiszállítás): mindig teljes 8,875%.
+   - Elektronika, alkohol (boltban), ajándéktárgyak/általános áru: mindig 8,875%,
+     nincs kivétel, nincs VAT-refund turistaként (ellentétben Európával).
+   ============================================================ */
+const taxCategories = [
+  {icon:"🍽️", name:"Éttermi kaja, bár, kiszállítás/elvitel", mode:"standard", rate:0.08875,
+   rateLabel:"8,875% mindig",
+   info:"Mindig a teljes 8,875%-os NYC-s forgalmi adó vonatkozik rá — akár helyben eszel, akár elviszed, akár kiszállítást kérsz. Nincs alsó összeghatár, minden tételre érvényes."},
+  {icon:"🛒", name:"Élelmiszer bevásárlás (nyers, otthoni fogyasztásra)", mode:"exempt", rate:0.08875,
+   rateLabel:"alapból adómentes*",
+   info:"A legtöbb alap élelmiszer (kenyér, tejtermék, friss zöldség/gyümölcs, csomagolt élelmiszer) adómentes New Yorkban. KIVÉTEL, ami a boltban is teljes 8,875%-os: cukorka/édesség, üdítő/szénsavas ital (a víz és a legtöbb gyümölcslé nem számít ide), alkohol, és bármi felmelegített vagy evőeszközzel/tálcán felszolgált étel (pl. a bolti deli-pult kész ételei). A lenti mezőbe a tisztán nyers/csomagolt vásárlásod összegét írd."},
+  {icon:"👕", name:"Ruházat és cipő", mode:"clothing", rate:0.08875,
+   rateLabel:"0% 110$ alatt / 8,875% 110$-tól",
+   info:"Tételenként (nem a teljes kosár összegén!) 110$ alatt TELJESEN adómentes New Yorkban — mind az állami, mind a városi rész. 110$-tól (azt is beleértve) a TELJES tételár után jár a 8,875%, nem csak a 110$ feletti rész után. A lenti mező EGY DARAB tétel árát jelenti, nem a teljes bevásárlás összegét — ha pl. 3 db 60$-os pólót veszel, mindegyik külön-külön adómentes, mert egyenként 110$ alatt van, még ha összesen 180$ is a kosár."},
+  {icon:"📱", name:"Elektronika (telefon, fényképezőgép, laptop stb.)", mode:"standard", rate:0.08875,
+   rateLabel:"8,875% mindig",
+   info:"Mindig a teljes 8,875%. Turistaként nincs adó-visszaigénylés (VAT refund) az USA-ban, ellentétben Európával — amit itt fizetsz adóban, az végleges, otthon nem igényelhető vissza."},
+  {icon:"🍷", name:"Alkohol (boltban, elvitelre)", mode:"standard", rate:0.08875,
+   rateLabel:"8,875% mindig",
+   info:"A teljes 8,875%, ugyanúgy mint az általános áruknál. Bárban/étteremben helyben fogyasztott alkoholra az éttermi kaja szabályai vonatkoznak (szintén 8,875%, csak más tétel alatt van a számlán)."},
+  {icon:"🎁", name:"Ajándéktárgyak / egyéb általános vásárlás", mode:"standard", rate:0.08875,
+   rateLabel:"8,875% mindig",
+   info:"A legtöbb egyéb tárgyi termékre (szuvenír, könyv, játék, kozmetikum, múzeumi bolt stb.) a sima 8,875% vonatkozik. Van néhány ritkán releváns kivétel (pl. bizonyos gyógyszerek, újságok/folyóiratok) — turistaként ezekkel valószínűleg nem találkozol."}
+];
+function renderTaxes(){
+  const wrap = document.getElementById('taxwrap');
+  if(!wrap) return;
+  wrap.innerHTML = taxCategories.map((c,i)=>`
+    <div class="block">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <div class="fname">${c.icon} ${c.name}</div>
+          <div class="fmeta">${c.rateLabel}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex:0 0 auto;">
+          <span style="font-weight:800;">$</span>
+          <input type="number" min="0" step="0.01" inputmode="decimal" id="taxin-${i}" placeholder="0.00"
+            oninput="calcTaxRow(${i})"
+            style="width:88px;padding:8px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper2);color:var(--ink);">
+          <span style="font-weight:800;">→</span>
+          <b id="taxout-${i}" style="min-width:76px;display:inline-block;">$0.00</b>
+        </div>
+        <a href="#" class="pinbtn" style="background:#555;flex:0 0 auto;" onclick="event.preventDefault();toggleTaxInfo(${i})" title="Infó — hogyan alkalmazódik ez az adó">ℹ️</a>
+      </div>
+      <div class="note" id="taxinfo-${i}" style="display:none;margin-top:8px;">${c.info}</div>
+    </div>`).join('');
+}
+function calcTaxRow(i){
+  const c = taxCategories[i];
+  const input = document.getElementById('taxin-'+i);
+  const out = document.getElementById('taxout-'+i);
+  const amt = parseFloat(input.value);
+  if(isNaN(amt) || amt<0){ out.textContent = '$0.00'; return; }
+  let total;
+  if(c.mode==='exempt') total = amt;
+  else if(c.mode==='clothing') total = amt < 110 ? amt : amt * (1+c.rate);
+  else total = amt * (1+c.rate);
+  out.textContent = '$'+total.toFixed(2);
+}
+function toggleTaxInfo(i){
+  const el = document.getElementById('taxinfo-'+i);
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+renderTaxes();
+
+/* ============================================================
    ESZKÖZÖK KÖZÖTTI SZINKRON (Firebase Realtime Database, REST + SSE)
    Két telefon között élőben szinkronizálja a pipákat és a költéseket —
    nem kell hozzá saját backend, csak egy ingyenes Firebase RTDB.
@@ -1143,6 +1229,7 @@ const views = [
   {id:"view-tips", label:"Közlekedés & tippek"},
   {id:"view-pack", label:"Csomaglista"},
   {id:"view-budget", label:"Költség"},
+  {id:"view-taxes", label:"Adók"},
   {id:"view-overview", label:"Áttekintés"},
   {id:"view-extra", label:"Boston / DC"}
 ];
