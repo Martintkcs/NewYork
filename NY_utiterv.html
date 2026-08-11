@@ -56,6 +56,20 @@ b,strong{font-weight:800;}
   letter-spacing:.4px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
 .mainnav button.active{color:#fff;border-bottom:3px solid var(--taxi);}
 
+/* ===== MOBILE NAV (☰ menü — csak keskeny képernyőn látszik, a mainnav helyett) ===== */
+.mobilenavbtn{display:none;width:100%;align-items:center;gap:10px;background:#1c1c1c;border:none;border-top:1px solid #333;
+  color:#fff;padding:13px 16px;font-size:.86rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;text-align:left;}
+.mobilenavbtn span:first-child{color:var(--taxi);font-size:1.1rem;}
+.mobilenavlist{display:flex;flex-direction:column;gap:4px;}
+.mobilenavitem{display:flex;align-items:center;gap:12px;width:100%;background:none;border:1.5px solid var(--line);
+  border-radius:8px;padding:13px 14px;font-size:.92rem;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;}
+.mobilenavitem.active{background:var(--black);color:#fff;border-color:var(--black);}
+.mobilenavicon{font-size:1.15rem;flex:0 0 auto;}
+@media(max-width:640px){
+  .mainnav{display:none;}
+  .mobilenavbtn{display:flex;}
+}
+
 main{max-width:1000px;margin:0 auto;padding:16px 12px 90px;}
 .view{display:none;}
 .view.active{display:block;animation:fadein .25s ease;}
@@ -311,6 +325,9 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     </div>
   </div>
   <div class="mainnav" id="mainnav"></div>
+  <button class="mobilenavbtn" onclick="openMobileMenu()">
+    <span>☰</span><span id="mobilenavCurrent">Napi terv</span>
+  </button>
 </div>
 
 <main>
@@ -617,6 +634,16 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     </div>
     <input class="searchbar" id="globalSearchInput" placeholder="Látnivaló, étterem, csomag, program…" oninput="renderGlobalSearch()" style="margin-bottom:0;">
     <div class="locModalBody" id="globalSearchResults" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<div id="mobileNavModal" class="locModal" onclick="closeMobileMenu(event)">
+  <div class="locModalCard" style="max-width:360px;">
+    <div class="locModalHead">
+      <b class="locModalTitle">☰ Fülek</b>
+      <button class="locModalClose" onclick="closeMobileMenu()">✕</button>
+    </div>
+    <div class="mobilenavlist" id="mobilenavList"></div>
   </div>
 </div>
 
@@ -1310,16 +1337,16 @@ function updateTrainMarker(){
    BUILD: MAIN NAV
    ============================================================ */
 const views = [
-  {id:"view-days", label:"Napi terv"},
-  {id:"view-map", label:"Térkép"},
-  {id:"view-food", label:"Étterem-felfedező"},
-  {id:"view-checklist", label:"Teljes jegyfüzet"},
-  {id:"view-tips", label:"Közlekedés & tippek"},
-  {id:"view-pack", label:"Csomaglista"},
-  {id:"view-budget", label:"Költség"},
-  {id:"view-taxes", label:"Adók"},
-  {id:"view-overview", label:"Áttekintés"},
-  {id:"view-extra", label:"Boston / DC"}
+  {id:"view-days", label:"Napi terv", icon:"📅"},
+  {id:"view-map", label:"Térkép", icon:"🗺️"},
+  {id:"view-food", label:"Étterem-felfedező", icon:"🍔"},
+  {id:"view-checklist", label:"Teljes jegyfüzet", icon:"🎫"},
+  {id:"view-tips", label:"Közlekedés & tippek", icon:"🚇"},
+  {id:"view-pack", label:"Csomaglista", icon:"🧳"},
+  {id:"view-budget", label:"Költség", icon:"💰"},
+  {id:"view-taxes", label:"Adók", icon:"🧾"},
+  {id:"view-overview", label:"Áttekintés", icon:"🚦"},
+  {id:"view-extra", label:"Boston / DC", icon:"🚆"}
 ];
 const mainnav = document.getElementById('mainnav');
 views.forEach((v,i)=>{
@@ -1329,10 +1356,34 @@ views.forEach((v,i)=>{
   b.onclick = ()=> goto(v.id);
   mainnav.appendChild(b);
 });
+// Mobilon (10 fül nem fér ki egy sorban vízszintes görgetés nélkül, ami könnyen elrejt füleket
+// jelzés nélkül) a vízszintes sáv helyett egy ☰ menügomb + függőleges lista jelenik meg —
+// ld. a .mainnav/.mobilenavbtn CSS media query-ket.
+const mobilenavList = document.getElementById('mobilenavList');
+views.forEach(v=>{
+  const b = document.createElement('button');
+  b.className = 'mobilenavitem'; b.id = 'mnav-'+v.id;
+  b.innerHTML = `<span class="mobilenavicon">${v.icon||'•'}</span><span>${v.label}</span>`;
+  b.onclick = ()=>{ goto(v.id); closeMobileMenu(); };
+  mobilenavList.appendChild(b);
+});
+function updateMobileNavLabel(id){
+  const v = views.find(x=>x.id===id);
+  const el = document.getElementById('mobilenavCurrent');
+  if(el && v) el.textContent = v.icon+' '+v.label;
+}
+function openMobileMenu(){ document.getElementById('mobileNavModal').style.display = 'flex'; }
+function closeMobileMenu(e){
+  if(e && e.target && e.target.id!=='mobileNavModal' && !e.target.classList.contains('locModalClose')) return;
+  document.getElementById('mobileNavModal').style.display = 'none';
+}
 function goto(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   views.forEach(v=>document.getElementById('nav-'+v.id).classList.toggle('active', v.id===id));
+  document.querySelectorAll('.mobilenavitem').forEach(el=>el.classList.remove('active'));
+  const mnavEl = document.getElementById('mnav-'+id); if(mnavEl) mnavEl.classList.add('active');
+  updateMobileNavLabel(id);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1488,6 +1539,8 @@ document.addEventListener('keydown', e=>{
     if(gm && gm.style.display==='flex') closeGlobalSearch();
     const lm = document.getElementById('locModal');
     if(lm && lm.style.display==='flex') closeLocModal();
+    const mm = document.getElementById('mobileNavModal');
+    if(mm && mm.style.display==='flex') closeMobileMenu();
   }
 });
 
