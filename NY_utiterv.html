@@ -1031,6 +1031,7 @@ function renderTaxes(){
           <b id="taxout-${i}" style="min-width:76px;display:inline-block;">$0.00</b>
         </div>
         <a href="#" class="pinbtn" style="background:#555;flex:0 0 auto;" onclick="event.preventDefault();toggleTaxInfo(${i})" title="Infó — hogyan alkalmazódik ez az adó">ℹ️</a>
+        <a href="#" id="taxaddbtn-${i}" class="pinbtn" style="background:#0039a6;flex:0 0 auto;" onclick="event.preventDefault();addTaxToBudget(${i})" title="Hozzáadás a mai költségvetéshez">💰</a>
       </div>
       ${c.tip ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);">
         <span style="font-size:.82rem;color:var(--muted);">+ borravaló</span>
@@ -1042,6 +1043,13 @@ function renderTaxes(){
       <div class="note" id="taxinfo-${i}" style="display:none;margin-top:8px;">${c.info}</div>
     </div>`).join('');
 }
+function taxRowWithTax(c, amt){
+  if(c.mode==='exempt') return amt;
+  if(c.mode==='clothing') return amt < 110 ? amt : amt * (1+c.rate);
+  if(c.mode==='hotel') return amt * (1+c.rate) + c.flatFee;
+  if(c.mode==='tiponly') return amt;
+  return amt * (1+c.rate);
+}
 function calcTaxRow(i){
   const c = taxCategories[i];
   const input = document.getElementById('taxin-'+i);
@@ -1052,12 +1060,7 @@ function calcTaxRow(i){
     if(c.tip){ document.getElementById('taxtipamt-'+i).textContent='$0.00'; document.getElementById('taxgrand-'+i).textContent='$0.00'; }
     return;
   }
-  let total;
-  if(c.mode==='exempt') total = amt;
-  else if(c.mode==='clothing') total = amt < 110 ? amt : amt * (1+c.rate);
-  else if(c.mode==='hotel') total = amt * (1+c.rate) + c.flatFee;
-  else if(c.mode==='tiponly') total = amt;
-  else total = amt * (1+c.rate);
+  const total = taxRowWithTax(c, amt);
   out.textContent = '$'+total.toFixed(2);
   if(c.tip){
     const tipInput = document.getElementById('taxtip-'+i);
@@ -1070,6 +1073,33 @@ function calcTaxRow(i){
 function toggleTaxInfo(i){
   const el = document.getElementById('taxinfo-'+i);
   if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+// A "💰" gomb az adott sorban beírt (adóval, és ha van, borravalóval együtt számolt) végösszeget
+// egyenesen beírja a mai nap Költség fülébe, a kategória nevével mint leírással — nem kell
+// átgépelni semmit. "Mai nap" = ha az utazás alatt vagyunk, a valós mai nap; egyébként az
+// éppen megnyitott/utoljára nézett nap a Napi tervben.
+function addTaxToBudget(i){
+  const c = taxCategories[i];
+  const input = document.getElementById('taxin-'+i);
+  const amt = parseFloat(input.value);
+  if(isNaN(amt) || amt<=0){ alert('Írj be egy összeget ehhez a kategóriához, mielőtt a költségvetésbe tennéd.'); return; }
+  let total = taxRowWithTax(c, amt);
+  if(c.tip){
+    const tipInput = document.getElementById('taxtip-'+i);
+    const tipPct = parseFloat(tipInput.value);
+    const tipAmt = (!isNaN(tipPct) && tipPct>=0) ? amt*(tipPct/100) : 0;
+    total += tipAmt;
+  }
+  const dayId = (typeof todayTripDayId==='function' && todayTripDayId())
+    || (days[currentDayIndex] ? days[currentDayIndex].id : days[0].id);
+  budgetEntries.push({id:'b'+Date.now()+Math.floor(Math.random()*1000), day:dayId, desc:c.name, amt:total});
+  saveBudget(); renderBudget(); syncWriteBudget();
+  const btn = document.getElementById('taxaddbtn-'+i);
+  if(btn){
+    const orig = btn.textContent;
+    btn.textContent = '✓'; btn.style.background = '#0a8a3a';
+    setTimeout(()=>{ btn.textContent = orig; btn.style.background = '#0039a6'; }, 1000);
+  }
 }
 function calcTipStandalone(){
   const base = parseFloat(document.getElementById('tipCalcBase').value);
