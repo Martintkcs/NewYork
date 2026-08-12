@@ -56,18 +56,28 @@ b,strong{font-weight:800;}
   letter-spacing:.4px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
 .mainnav button.active{color:#fff;border-bottom:3px solid var(--taxi);}
 
-/* ===== MOBILE NAV (☰ menü — csak keskeny képernyőn látszik, a mainnav helyett) ===== */
-.mobilenavbtn{display:none;width:100%;align-items:center;gap:10px;background:#1c1c1c;border:none;border-top:1px solid #333;
-  color:#fff;padding:13px 16px;font-size:.86rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;text-align:left;}
-.mobilenavbtn span:first-child{color:var(--taxi);font-size:1.1rem;}
+/* ===== MOBILE TOOLBAR (nap-választó + ☰ menü — csak keskeny képernyőn, RÖGZÍTVE a
+   tetején görgetés közben is, hogy sose kelljen visszagörgetni a váltáshoz) ===== */
+.mobileToolbar{display:none;position:sticky;top:0;z-index:60;background:#1c1c1c;
+  border-top:1px solid #333;border-bottom:1px solid #333;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.mobiletoolbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:none;border:none;
+  color:#fff;padding:13px 8px;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;
+  cursor:pointer;min-width:0;}
+.mobiletoolbtn span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mobiletoolbtn:first-child{border-right:1px solid #333;}
+.mobiletoolicon{color:var(--taxi);font-size:1.05rem;flex:0 0 auto;}
 .mobilenavlist{display:flex;flex-direction:column;gap:4px;}
 .mobilenavitem{display:flex;align-items:center;gap:12px;width:100%;background:none;border:1.5px solid var(--line);
   border-radius:8px;padding:13px 14px;font-size:.92rem;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;}
 .mobilenavitem.active{background:var(--black);color:#fff;border-color:var(--black);}
 .mobilenavicon{font-size:1.15rem;flex:0 0 auto;}
+.daypickicon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:900;font-size:.85rem;flex:0 0 auto;}
+.daypicktext{display:flex;flex-direction:column;min-width:0;}
+.daypicktext small{font-weight:400;font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 @media(max-width:640px){
   .mainnav{display:none;}
-  .mobilenavbtn{display:flex;}
+  .mobileToolbar{display:flex;}
 }
 
 main{max-width:1000px;margin:0 auto;padding:16px 12px 90px;}
@@ -327,8 +337,13 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     </div>
   </div>
   <div class="mainnav" id="mainnav"></div>
-  <button class="mobilenavbtn" onclick="openMobileMenu()">
-    <span>☰</span><span id="mobilenavCurrent">Napi terv</span>
+</div>
+<div class="mobileToolbar" id="mobileToolbar">
+  <button class="mobiletoolbtn" onclick="openDayPicker()">
+    <span class="mobiletoolicon">📅</span><span id="mobileDayCurrent">1. nap</span>
+  </button>
+  <button class="mobiletoolbtn" onclick="openMobileMenu()">
+    <span class="mobiletoolicon">☰</span><span id="mobilenavCurrent">Napi terv</span>
   </button>
 </div>
 
@@ -646,6 +661,16 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <button class="locModalClose" onclick="closeMobileMenu()">✕</button>
     </div>
     <div class="mobilenavlist" id="mobilenavList"></div>
+  </div>
+</div>
+
+<div id="dayPickerModal" class="locModal" onclick="closeDayPicker(event)">
+  <div class="locModalCard" style="max-width:380px;">
+    <div class="locModalHead">
+      <b class="locModalTitle">📅 Napok</b>
+      <button class="locModalClose" onclick="closeDayPicker()">✕</button>
+    </div>
+    <div class="mobilenavlist" id="dayPickerList"></div>
   </div>
 </div>
 
@@ -1379,6 +1404,22 @@ function closeMobileMenu(e){
   if(e && e.target && e.target.id!=='mobileNavModal' && !e.target.classList.contains('locModalClose')) return;
   document.getElementById('mobileNavModal').style.display = 'none';
 }
+// Ugyanaz a probléma a napválasztó vasúti-sávval is (12 nap, csak ~5 fér ki görgetés nélkül) —
+// mobilon a rögzített eszköztár 📅 gombja ugyanezt a fajta lenyíló, egyszerre látható listát nyitja.
+const dayPickerList = document.getElementById('dayPickerList');
+days.forEach(d=>{
+  const b = document.createElement('button');
+  b.className = 'mobilenavitem'; b.id = 'daypick-'+d.id;
+  b.innerHTML = `<span class="daypickicon" style="background:${d.color}">${d.num}</span>
+    <span class="daypicktext"><b>${d.date}</b><small>${d.title}</small></span>`;
+  b.onclick = ()=>{ goto('view-days'); showDay(d.id); closeDayPicker(); };
+  dayPickerList.appendChild(b);
+});
+function openDayPicker(){ document.getElementById('dayPickerModal').style.display = 'flex'; }
+function closeDayPicker(e){
+  if(e && e.target && e.target.id!=='dayPickerModal' && !e.target.classList.contains('locModalClose')) return;
+  document.getElementById('dayPickerModal').style.display = 'none';
+}
 function goto(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1543,6 +1584,8 @@ document.addEventListener('keydown', e=>{
     if(lm && lm.style.display==='flex') closeLocModal();
     const mm = document.getElementById('mobileNavModal');
     if(mm && mm.style.display==='flex') closeMobileMenu();
+    const dm = document.getElementById('dayPickerModal');
+    if(dm && dm.style.display==='flex') closeDayPicker();
   }
 });
 
@@ -1681,6 +1724,11 @@ function showDay(id){
   document.getElementById('station-'+id).classList.add('active');
   document.getElementById('station-'+id).scrollIntoView({inline:'center',behavior:'smooth',block:'nearest'});
   renderDayFood(id);
+  const d = days[idx];
+  const dayLbl = document.getElementById('mobileDayCurrent');
+  if(dayLbl && d) dayLbl.textContent = d.num+'. nap';
+  document.querySelectorAll('#dayPickerList .mobilenavitem').forEach(el=>el.classList.remove('active'));
+  const dp = document.getElementById('daypick-'+id); if(dp) dp.classList.add('active');
 }
 function stepDay(delta){
   const ni = currentDayIndex+delta;
