@@ -56,20 +56,39 @@ b,strong{font-weight:800;}
   letter-spacing:.4px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
 .mainnav button.active{color:#fff;border-bottom:3px solid var(--taxi);}
 
-/* ===== MOBILE TOOLBAR (nap-választó + ☰ menü — csak keskeny képernyőn, RÖGZÍTVE a
-   tetején görgetés közben is, hogy sose kelljen visszagörgetni a váltáshoz) ===== */
-.mobileToolbar{display:none;position:sticky;top:0;z-index:60;background:#1c1c1c;
-  border-top:1px solid #333;border-bottom:1px solid #333;box-shadow:0 2px 8px rgba(0,0,0,.3);}
-.mobiletoolbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:none;border:none;
-  color:#fff;padding:13px 8px;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;
-  cursor:pointer;min-width:0;}
-.mobiletoolbtn span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mobiletoolbtn:first-child{border-right:1px solid #333;}
-.mobiletoolicon{color:var(--taxi);font-size:1.05rem;flex:0 0 auto;}
+/* ===== MOBILE NAV v2: alsó lapfül-sáv (natív app minta — mindig hüvelykujjal elérhető,
+   nincs felnyúlás a képernyő tetejéhez) + alulról felcsúszó "sheet" a napokhoz/több fülhöz.
+   Csak keskeny képernyőn aktív, desktopon a klasszikus felső .mainnav marad. ===== */
+.bottomTabBar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:70;background:#1c1c1c;
+  border-top:1px solid #333;padding-bottom:env(safe-area-inset-bottom,0);
+  box-shadow:0 -4px 16px rgba(0,0,0,.35);}
+.bottomTabRow{display:flex;}
+.bottomTabProgress{height:3px;background:#333;}
+.bottomTabProgressFill{height:100%;background:linear-gradient(90deg,var(--taxi),#ffe27a);width:0%;transition:width .3s;}
+.bottomTabBtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:none;border:none;color:#8a8a8a;padding:8px 4px 9px;font-size:.62rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.2px;cursor:pointer;}
+.bottomTabIcon{font-size:1.3rem;line-height:1;}
+.bottomTabBtn.active{color:#fff;}
+.bottomTabBtn.active .bottomTabIcon{transform:translateY(-1px);}
+.bottomTabDot{width:4px;height:4px;border-radius:50%;background:var(--taxi);margin-top:1px;opacity:0;}
+.bottomTabBtn.active .bottomTabDot{opacity:1;}
+
+/* alulról felcsúszó sheet (napválasztó / "Több" fülök) */
+.sheetModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:flex-end;justify-content:center;}
+.sheetCard{background:var(--paper2);width:100%;max-width:520px;max-height:78vh;overflow-y:auto;
+  border-radius:18px 18px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom,0));
+  box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:sheetUp .22s ease;}
+@keyframes sheetUp{from{transform:translateY(24px);opacity:.4;}to{transform:translateY(0);opacity:1;}}
+.sheetHandle{width:38px;height:4px;background:var(--line);border-radius:2px;margin:8px auto 12px;}
+.sheetTitle{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;}
+.sheetTitle button{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink);}
 .mobilenavlist{display:flex;flex-direction:column;gap:4px;}
 .mobilenavitem{display:flex;align-items:center;gap:12px;width:100%;background:none;border:1.5px solid var(--line);
   border-radius:8px;padding:13px 14px;font-size:.92rem;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;}
 .mobilenavitem.active{background:var(--black);color:#fff;border-color:var(--black);}
+.mobilenavitem.resetitem{color:#900;border-color:#c99;margin-top:6px;}
 .mobilenavicon{font-size:1.15rem;flex:0 0 auto;}
 .daypickicon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   color:#fff;font-weight:900;font-size:.85rem;flex:0 0 auto;}
@@ -77,7 +96,9 @@ b,strong{font-weight:800;}
 .daypicktext small{font-weight:400;font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 @media(max-width:640px){
   .mainnav{display:none;}
-  .mobileToolbar{display:flex;}
+  .bottomTabBar{display:block;}
+  .footerbar{display:none;}
+  main{padding-bottom:74px;}
 }
 
 main{max-width:1000px;margin:0 auto;padding:16px 12px 90px;}
@@ -338,14 +359,6 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
   </div>
   <div class="mainnav" id="mainnav"></div>
 </div>
-<div class="mobileToolbar" id="mobileToolbar">
-  <button class="mobiletoolbtn" onclick="openDayPicker()">
-    <span class="mobiletoolicon">📅</span><span id="mobileDayCurrent">1. nap</span>
-  </button>
-  <button class="mobiletoolbtn" onclick="openMobileMenu()">
-    <span class="mobiletoolicon">☰</span><span id="mobilenavCurrent">Napi terv</span>
-  </button>
-</div>
 
 <main>
 
@@ -593,6 +606,27 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
   </div>
 
   <div class="foodmachine">
+    <h4>💱 Forint ↔ Dollár átváltó</h4>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <span>1 USD =</span>
+      <input type="number" min="0" step="0.1" inputmode="decimal" id="fxRate" value="310" oninput="calcFx('rate')"
+        style="width:76px;padding:8px;border:1.5px solid #555;border-radius:6px;background:#1e1e1e;color:#fff;">
+      <span>Ft</span>
+      <span style="font-size:.76rem;color:#888;">(írd át a friss árfolyamra indulás előtt)</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span>$</span>
+      <input type="number" min="0" step="0.01" inputmode="decimal" id="fxUsd" placeholder="0.00" oninput="calcFx('usd')"
+        style="width:100px;padding:8px;border:1.5px solid #555;border-radius:6px;background:#1e1e1e;color:#fff;">
+      <span style="font-size:1.2rem;color:var(--taxi);">⇄</span>
+      <input type="number" min="0" step="1" inputmode="decimal" id="fxHuf" placeholder="0" oninput="calcFx('huf')"
+        style="width:130px;padding:8px;border:1.5px solid #555;border-radius:6px;background:#1e1e1e;color:#fff;">
+      <span>Ft</span>
+    </div>
+    <div class="note" style="color:#999;">Tájékoztató árfolyam (2026 nyári nagyságrend), NEM élő adat — indulás előtt nézd meg a napi árfolyamot (pl. a bankod appjában) és írd át a fenti mezőt, utána mindkét irányban pontosan számol.</div>
+  </div>
+
+  <div class="foodmachine">
     <h4>💵 Önálló borravaló-számológép</h4>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span>Számla összege $</span>
@@ -633,6 +667,43 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 </div></div>
 <footer class="credit">Egyetlen önálló HTML fájl — küldd tovább bárkinek megosztásra. A pipák localStorage-ban mentődnek ezen a gépen/böngészőben.</footer>
 
+<div class="bottomTabBar" id="bottomTabBar">
+  <div class="bottomTabProgress"><div class="bottomTabProgressFill" id="bottomProgressFill"></div></div>
+  <div class="bottomTabRow">
+    <button class="bottomTabBtn" id="tab-day" onclick="openDaySheet()">
+      <span class="bottomTabIcon">📅</span><span>Nap</span><span class="bottomTabDot"></span>
+    </button>
+    <button class="bottomTabBtn" id="tab-map" onclick="goto('view-map')">
+      <span class="bottomTabIcon">🗺️</span><span>Térkép</span><span class="bottomTabDot"></span>
+    </button>
+    <button class="bottomTabBtn" id="tab-food" onclick="goto('view-food')">
+      <span class="bottomTabIcon">🍔</span><span>Kaja</span><span class="bottomTabDot"></span>
+    </button>
+    <button class="bottomTabBtn" id="tab-money" onclick="goto('view-budget')">
+      <span class="bottomTabIcon">💰</span><span>Pénz</span><span class="bottomTabDot"></span>
+    </button>
+    <button class="bottomTabBtn" id="tab-more" onclick="openMoreSheet()">
+      <span class="bottomTabIcon">☰</span><span>Több</span><span class="bottomTabDot"></span>
+    </button>
+  </div>
+</div>
+
+<div id="daySheet" class="sheetModal" onclick="closeDaySheet(event)">
+  <div class="sheetCard">
+    <div class="sheetHandle"></div>
+    <div class="sheetTitle"><span>📅 Napok</span><button onclick="closeDaySheet()">✕</button></div>
+    <div class="mobilenavlist" id="dayPickerList"></div>
+  </div>
+</div>
+
+<div id="moreSheet" class="sheetModal" onclick="closeMoreSheet(event)">
+  <div class="sheetCard">
+    <div class="sheetHandle"></div>
+    <div class="sheetTitle"><span>☰ Több</span><button onclick="closeMoreSheet()">✕</button></div>
+    <div class="mobilenavlist" id="moreSheetList"></div>
+  </div>
+</div>
+
 <div id="locModal" class="locModal" onclick="closeLocModal(event)">
   <div class="locModalCard">
     <div class="locModalHead">
@@ -651,26 +722,6 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     </div>
     <input class="searchbar" id="globalSearchInput" placeholder="Látnivaló, étterem, csomag, program…" oninput="renderGlobalSearch()" style="margin-bottom:0;">
     <div class="locModalBody" id="globalSearchResults" style="margin-top:10px;"></div>
-  </div>
-</div>
-
-<div id="mobileNavModal" class="locModal" onclick="closeMobileMenu(event)">
-  <div class="locModalCard" style="max-width:360px;">
-    <div class="locModalHead">
-      <b class="locModalTitle">☰ Fülek</b>
-      <button class="locModalClose" onclick="closeMobileMenu()">✕</button>
-    </div>
-    <div class="mobilenavlist" id="mobilenavList"></div>
-  </div>
-</div>
-
-<div id="dayPickerModal" class="locModal" onclick="closeDayPicker(event)">
-  <div class="locModalCard" style="max-width:380px;">
-    <div class="locModalHead">
-      <b class="locModalTitle">📅 Napok</b>
-      <button class="locModalClose" onclick="closeDayPicker()">✕</button>
-    </div>
-    <div class="mobilenavlist" id="dayPickerList"></div>
   </div>
 </div>
 
@@ -1155,6 +1206,22 @@ function addTaxToBudget(i){
     setTimeout(()=>{ btn.textContent = orig; btn.style.background = '#0039a6'; }, 1000);
   }
 }
+function calcFx(source){
+  const rate = parseFloat(document.getElementById('fxRate').value);
+  const usdEl = document.getElementById('fxUsd'), hufEl = document.getElementById('fxHuf');
+  if(isNaN(rate) || rate<=0) return;
+  if(source==='usd'){
+    const usd = parseFloat(usdEl.value);
+    hufEl.value = isNaN(usd) ? '' : Math.round(usd*rate);
+  } else if(source==='huf'){
+    const huf = parseFloat(hufEl.value);
+    usdEl.value = isNaN(huf) ? '' : (huf/rate).toFixed(2);
+  } else if(source==='rate'){
+    const usd = parseFloat(usdEl.value), huf = parseFloat(hufEl.value);
+    if(!isNaN(usd) && usd>0) hufEl.value = Math.round(usd*rate);
+    else if(!isNaN(huf) && huf>0) usdEl.value = (huf/rate).toFixed(2);
+  }
+}
 function calcTipStandalone(){
   const base = parseFloat(document.getElementById('tipCalcBase').value);
   const pct = parseFloat(document.getElementById('tipCalcPct').value);
@@ -1384,41 +1451,54 @@ views.forEach((v,i)=>{
   mainnav.appendChild(b);
 });
 // Mobilon (10 fül nem fér ki egy sorban vízszintes görgetés nélkül, ami könnyen elrejt füleket
-// jelzés nélkül) a vízszintes sáv helyett egy ☰ menügomb + függőleges lista jelenik meg —
-// ld. a .mainnav/.mobilenavbtn CSS media query-ket.
-const mobilenavList = document.getElementById('mobilenavList');
-views.forEach(v=>{
+// jelzés nélkül) a vízszintes sáv helyett egy alsó lapfül-sáv van 4 legtöbbet használt füllel
+// (Nap, Térkép, Kaja, Pénz) + egy "Több" gomb, ami alulról felcsúszó listában mutatja a többit.
+const BOTTOM_TAB_VIEWS = ["view-days","view-map","view-food","view-budget"];
+const moreSheetList = document.getElementById('moreSheetList');
+views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id)).forEach(v=>{
   const b = document.createElement('button');
   b.className = 'mobilenavitem'; b.id = 'mnav-'+v.id;
   b.innerHTML = `<span class="mobilenavicon">${v.icon||'•'}</span><span>${v.label}</span>`;
-  b.onclick = ()=>{ goto(v.id); closeMobileMenu(); };
-  mobilenavList.appendChild(b);
+  b.onclick = ()=>{ goto(v.id); closeMoreSheet(); };
+  moreSheetList.appendChild(b);
 });
-function updateMobileNavLabel(id){
-  const v = views.find(x=>x.id===id);
-  const el = document.getElementById('mobilenavCurrent');
-  if(el && v) el.textContent = v.icon+' '+v.label;
-}
-function openMobileMenu(){ document.getElementById('mobileNavModal').style.display = 'flex'; }
-function closeMobileMenu(e){
-  if(e && e.target && e.target.id!=='mobileNavModal' && !e.target.classList.contains('locModalClose')) return;
-  document.getElementById('mobileNavModal').style.display = 'none';
+(function(){
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'mobilenavitem resetitem';
+  resetBtn.innerHTML = `<span class="mobilenavicon">↺</span><span>Összes pipa törlése</span>`;
+  resetBtn.onclick = ()=>{ closeMoreSheet(); resetAll(); };
+  moreSheetList.appendChild(resetBtn);
+})();
+function openMoreSheet(){ document.getElementById('moreSheet').style.display = 'flex'; }
+function closeMoreSheet(e){
+  if(e && e.target && e.target.id!=='moreSheet') return;
+  document.getElementById('moreSheet').style.display = 'none';
 }
 // Ugyanaz a probléma a napválasztó vasúti-sávval is (12 nap, csak ~5 fér ki görgetés nélkül) —
-// mobilon a rögzített eszköztár 📅 gombja ugyanezt a fajta lenyíló, egyszerre látható listát nyitja.
+// az alsó "Nap" gomb ugyanezt a fajta alulról felcsúszó, egyszerre látható listát nyitja.
 const dayPickerList = document.getElementById('dayPickerList');
 days.forEach(d=>{
   const b = document.createElement('button');
   b.className = 'mobilenavitem'; b.id = 'daypick-'+d.id;
   b.innerHTML = `<span class="daypickicon" style="background:${d.color}">${d.num}</span>
     <span class="daypicktext"><b>${d.date}</b><small>${d.title}</small></span>`;
-  b.onclick = ()=>{ goto('view-days'); showDay(d.id); closeDayPicker(); };
+  b.onclick = ()=>{ goto('view-days'); showDay(d.id); closeDaySheet(); };
   dayPickerList.appendChild(b);
 });
-function openDayPicker(){ document.getElementById('dayPickerModal').style.display = 'flex'; }
-function closeDayPicker(e){
-  if(e && e.target && e.target.id!=='dayPickerModal' && !e.target.classList.contains('locModalClose')) return;
-  document.getElementById('dayPickerModal').style.display = 'none';
+function openDaySheet(){ document.getElementById('daySheet').style.display = 'flex'; }
+function closeDaySheet(e){
+  if(e && e.target && e.target.id!=='daySheet') return;
+  document.getElementById('daySheet').style.display = 'none';
+}
+function updateBottomTabActive(id){
+  document.querySelectorAll('.bottomTabBtn').forEach(b=>b.classList.remove('active'));
+  let target = null;
+  if(BOTTOM_TAB_VIEWS.includes(id)){
+    target = id==='view-days' ? 'tab-day' : id==='view-map' ? 'tab-map' : id==='view-food' ? 'tab-food' : 'tab-money';
+  } else {
+    target = 'tab-more';
+  }
+  const el = document.getElementById(target); if(el) el.classList.add('active');
 }
 function goto(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -1426,7 +1506,7 @@ function goto(id){
   views.forEach(v=>document.getElementById('nav-'+v.id).classList.toggle('active', v.id===id));
   document.querySelectorAll('.mobilenavitem').forEach(el=>el.classList.remove('active'));
   const mnavEl = document.getElementById('mnav-'+id); if(mnavEl) mnavEl.classList.add('active');
-  updateMobileNavLabel(id);
+  updateBottomTabActive(id);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1582,10 +1662,10 @@ document.addEventListener('keydown', e=>{
     if(gm && gm.style.display==='flex') closeGlobalSearch();
     const lm = document.getElementById('locModal');
     if(lm && lm.style.display==='flex') closeLocModal();
-    const mm = document.getElementById('mobileNavModal');
-    if(mm && mm.style.display==='flex') closeMobileMenu();
-    const dm = document.getElementById('dayPickerModal');
-    if(dm && dm.style.display==='flex') closeDayPicker();
+    const ms = document.getElementById('moreSheet');
+    if(ms && ms.style.display==='flex') closeMoreSheet();
+    const ds = document.getElementById('daySheet');
+    if(ds && ds.style.display==='flex') closeDaySheet();
   }
 });
 
@@ -1724,9 +1804,6 @@ function showDay(id){
   document.getElementById('station-'+id).classList.add('active');
   document.getElementById('station-'+id).scrollIntoView({inline:'center',behavior:'smooth',block:'nearest'});
   renderDayFood(id);
-  const d = days[idx];
-  const dayLbl = document.getElementById('mobileDayCurrent');
-  if(dayLbl && d) dayLbl.textContent = d.num+'. nap';
   document.querySelectorAll('#dayPickerList .mobilenavitem').forEach(el=>el.classList.remove('active'));
   const dp = document.getElementById('daypick-'+id); if(dp) dp.classList.add('active');
 }
@@ -1947,6 +2024,8 @@ function refreshVisuals(){
   let done=0; allCheckIds.forEach(c=>{ if(localStorage.getItem('ny2026_'+c)==='1') done++; });
   document.getElementById('metrofill').style.width = (total?done/total*100:0)+'%';
   document.getElementById('footertext').textContent = done+'/'+total;
+  const bottomFill = document.getElementById('bottomProgressFill');
+  if(bottomFill) bottomFill.style.width = (total?done/total*100:0)+'%';
   updateTrainMarker();
 }
 function resetAll(){
