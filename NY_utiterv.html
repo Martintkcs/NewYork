@@ -676,9 +676,6 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <div class="bottomTabBar" id="bottomTabBar">
   <div class="bottomTabProgress"><div class="bottomTabProgressFill" id="bottomProgressFill"></div></div>
   <div class="bottomTabRow">
-    <button class="bottomTabBtn" id="tab-day" onclick="openDaySheet()">
-      <span class="bottomTabIcon">📅</span><span>Nap</span><span class="bottomTabDot"></span>
-    </button>
     <button class="bottomTabBtn" id="tab-food" onclick="goto('view-food')">
       <span class="bottomTabIcon">🍔</span><span>Kaja</span><span class="bottomTabDot"></span>
     </button>
@@ -688,8 +685,8 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     <button class="bottomTabBtn" id="tab-tax" onclick="goto('view-taxes')">
       <span class="bottomTabIcon">🧾</span><span>Adó</span><span class="bottomTabDot"></span>
     </button>
-    <button class="bottomTabBtn" id="tab-pack" onclick="goto('view-pack')">
-      <span class="bottomTabIcon">🧳</span><span>Csomag</span><span class="bottomTabDot"></span>
+    <button class="bottomTabBtn" id="tab-checklist" onclick="goto('view-checklist')">
+      <span class="bottomTabIcon">🎫</span><span>Jegyfüzet</span><span class="bottomTabDot"></span>
     </button>
     <button class="bottomTabBtn" id="tab-more" onclick="openMoreSheet()">
       <span class="bottomTabIcon">☰</span><span>Több</span><span class="bottomTabDot"></span>
@@ -1460,17 +1457,17 @@ views.forEach((v,i)=>{
   mainnav.appendChild(b);
 });
 // Mobilon (10 fül nem fér ki egy sorban vízszintes görgetés nélkül, ami könnyen elrejt füleket
-// jelzés nélkül) a vízszintes sáv helyett egy alsó lapfül-sáv van: 📅 Nap (napválasztó) +
-// 4 fő fül (Kaja, Pénz, Adó, Csomaglista) + ☰ Több a többinek (Napi terv nézet magától a
-// napválasztóból is elérhető, Térkép/Teljes jegyfüzet/Közlekedés/Áttekintés/Boston-DC a Többben).
-const BOTTOM_TAB_VIEWS = ["view-food","view-budget","view-taxes","view-pack"];
-const BOTTOM_TAB_MAP = {"view-food":"tab-food","view-budget":"tab-money","view-taxes":"tab-tax","view-pack":"tab-pack"};
+// jelzés nélkül) a vízszintes sáv helyett egy alsó lapfül-sáv van: 4 fő fül (Kaja, Pénz, Adó,
+// Teljes jegyfüzet) + ☰ Több a többinek. A Napi terv a Többben van, de rákattintva nem a
+// legutóbb nézett napra ugrik, hanem egyenesen a napválasztó (12 nap) listát nyitja meg.
+const BOTTOM_TAB_VIEWS = ["view-food","view-budget","view-taxes","view-checklist"];
+const BOTTOM_TAB_MAP = {"view-food":"tab-food","view-budget":"tab-money","view-taxes":"tab-tax","view-checklist":"tab-checklist"};
 const moreSheetList = document.getElementById('moreSheetList');
-views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id) && v.id!=='view-days').forEach(v=>{
+views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id)).forEach(v=>{
   const b = document.createElement('button');
   b.className = 'mobilenavitem'; b.id = 'mnav-'+v.id;
   b.innerHTML = `<span class="mobilenavicon">${v.icon||'•'}</span><span>${v.label}</span>`;
-  b.onclick = ()=>{ goto(v.id); closeMoreSheet(); };
+  b.onclick = v.id==='view-days' ? (()=>{ closeMoreSheet(); openDaySheet(); }) : (()=>{ goto(v.id); closeMoreSheet(); });
   moreSheetList.appendChild(b);
 });
 (function(){
@@ -1545,7 +1542,7 @@ function closeDaySheet(e){
 setupSheetDrag('daySheetHandle', 'daySheetCard', closeDaySheet);
 function updateBottomTabActive(id){
   document.querySelectorAll('.bottomTabBtn').forEach(b=>b.classList.remove('active'));
-  let target = id==='view-days' ? 'tab-day' : (BOTTOM_TAB_MAP[id] || 'tab-more');
+  let target = BOTTOM_TAB_MAP[id] || 'tab-more';
   const el = document.getElementById(target); if(el) el.classList.add('active');
 }
 function goto(id){
