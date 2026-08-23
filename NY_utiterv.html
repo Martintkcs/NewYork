@@ -77,13 +77,19 @@ b,strong{font-weight:800;}
 /* alulról felcsúszó sheet (napválasztó / "Több" fülök) */
 .sheetModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:flex-end;justify-content:center;}
 .sheetCard{background:var(--paper2);width:100%;max-width:520px;max-height:78vh;overflow-y:auto;
-  border-radius:18px 18px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom,0));
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  border-radius:18px 18px 0 0;padding:0 16px calc(20px + env(safe-area-inset-bottom,0));
   box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:sheetUp .22s ease;}
 @keyframes sheetUp{from{transform:translateY(24px);opacity:.4;}to{transform:translateY(0);opacity:1;}}
-.sheetHandle{width:38px;height:4px;background:var(--line);border-radius:2px;margin:8px auto 12px;}
-.sheetTitle{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;
+/* a lehúzva-bezárás fogantyúja — nagyobb, könnyen eltalálható érintési zóna a kis vizuális
+   csík körül, hogy a felső részt lehúzva be lehessen csukni a panelt (a lista görgetését
+   ez nem érinti, mert a drag-figyelő csak ezen a zónán van, nem a teljes kártyán) */
+.sheetHandleZone{padding:14px 0 10px;margin:0 -16px;cursor:grab;touch-action:none;}
+.sheetHandleZone:active{cursor:grabbing;}
+.sheetHandle{width:38px;height:4px;background:var(--line);border-radius:2px;margin:0 auto;}
+.sheetTitle{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin:2px 0 12px;
   display:flex;align-items:center;justify-content:space-between;}
-.sheetTitle button{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink);}
+.sheetTitle button{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink);padding:6px;}
 .mobilenavlist{display:flex;flex-direction:column;gap:4px;}
 .mobilenavitem{display:flex;align-items:center;gap:12px;width:100%;background:none;border:1.5px solid var(--line);
   border-radius:8px;padding:13px 14px;font-size:.92rem;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;}
@@ -673,14 +679,17 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
     <button class="bottomTabBtn" id="tab-day" onclick="openDaySheet()">
       <span class="bottomTabIcon">📅</span><span>Nap</span><span class="bottomTabDot"></span>
     </button>
-    <button class="bottomTabBtn" id="tab-map" onclick="goto('view-map')">
-      <span class="bottomTabIcon">🗺️</span><span>Térkép</span><span class="bottomTabDot"></span>
-    </button>
     <button class="bottomTabBtn" id="tab-food" onclick="goto('view-food')">
       <span class="bottomTabIcon">🍔</span><span>Kaja</span><span class="bottomTabDot"></span>
     </button>
     <button class="bottomTabBtn" id="tab-money" onclick="goto('view-budget')">
       <span class="bottomTabIcon">💰</span><span>Pénz</span><span class="bottomTabDot"></span>
+    </button>
+    <button class="bottomTabBtn" id="tab-tax" onclick="goto('view-taxes')">
+      <span class="bottomTabIcon">🧾</span><span>Adó</span><span class="bottomTabDot"></span>
+    </button>
+    <button class="bottomTabBtn" id="tab-pack" onclick="goto('view-pack')">
+      <span class="bottomTabIcon">🧳</span><span>Csomag</span><span class="bottomTabDot"></span>
     </button>
     <button class="bottomTabBtn" id="tab-more" onclick="openMoreSheet()">
       <span class="bottomTabIcon">☰</span><span>Több</span><span class="bottomTabDot"></span>
@@ -689,16 +698,16 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 </div>
 
 <div id="daySheet" class="sheetModal" onclick="closeDaySheet(event)">
-  <div class="sheetCard">
-    <div class="sheetHandle"></div>
+  <div class="sheetCard" id="daySheetCard">
+    <div class="sheetHandleZone" id="daySheetHandle"><div class="sheetHandle"></div></div>
     <div class="sheetTitle"><span>📅 Napok</span><button onclick="closeDaySheet()">✕</button></div>
     <div class="mobilenavlist" id="dayPickerList"></div>
   </div>
 </div>
 
 <div id="moreSheet" class="sheetModal" onclick="closeMoreSheet(event)">
-  <div class="sheetCard">
-    <div class="sheetHandle"></div>
+  <div class="sheetCard" id="moreSheetCard">
+    <div class="sheetHandleZone" id="moreSheetHandle"><div class="sheetHandle"></div></div>
     <div class="sheetTitle"><span>☰ Több</span><button onclick="closeMoreSheet()">✕</button></div>
     <div class="mobilenavlist" id="moreSheetList"></div>
   </div>
@@ -1451,11 +1460,13 @@ views.forEach((v,i)=>{
   mainnav.appendChild(b);
 });
 // Mobilon (10 fül nem fér ki egy sorban vízszintes görgetés nélkül, ami könnyen elrejt füleket
-// jelzés nélkül) a vízszintes sáv helyett egy alsó lapfül-sáv van 4 legtöbbet használt füllel
-// (Nap, Térkép, Kaja, Pénz) + egy "Több" gomb, ami alulról felcsúszó listában mutatja a többit.
-const BOTTOM_TAB_VIEWS = ["view-days","view-map","view-food","view-budget"];
+// jelzés nélkül) a vízszintes sáv helyett egy alsó lapfül-sáv van: 📅 Nap (napválasztó) +
+// 4 fő fül (Kaja, Pénz, Adó, Csomaglista) + ☰ Több a többinek (Napi terv nézet magától a
+// napválasztóból is elérhető, Térkép/Teljes jegyfüzet/Közlekedés/Áttekintés/Boston-DC a Többben).
+const BOTTOM_TAB_VIEWS = ["view-food","view-budget","view-taxes","view-pack"];
+const BOTTOM_TAB_MAP = {"view-food":"tab-food","view-budget":"tab-money","view-taxes":"tab-tax","view-pack":"tab-pack"};
 const moreSheetList = document.getElementById('moreSheetList');
-views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id)).forEach(v=>{
+views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id) && v.id!=='view-days').forEach(v=>{
   const b = document.createElement('button');
   b.className = 'mobilenavitem'; b.id = 'mnav-'+v.id;
   b.innerHTML = `<span class="mobilenavicon">${v.icon||'•'}</span><span>${v.label}</span>`;
@@ -1469,11 +1480,51 @@ views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id)).forEach(v=>{
   resetBtn.onclick = ()=>{ closeMoreSheet(); resetAll(); };
   moreSheetList.appendChild(resetBtn);
 })();
-function openMoreSheet(){ document.getElementById('moreSheet').style.display = 'flex'; }
+// Panel nyitva léte alatt a háttér (body) görgetése le van tiltva — enélkül mobilon
+// (főleg iOS Safarin) előfordul, hogy érintésre a lista helyett a mögötte lévő oldal görög,
+// ami úgy tűnik, mintha a panel listája "nem lenne görgethető".
+let sheetScrollLockCount = 0;
+function lockBodyScroll(){
+  sheetScrollLockCount++;
+  document.body.style.overflow = 'hidden';
+}
+function unlockBodyScroll(){
+  sheetScrollLockCount = Math.max(0, sheetScrollLockCount-1);
+  if(sheetScrollLockCount===0) document.body.style.overflow = '';
+}
+// Lehúzva-bezárás: a panel tetején lévő fogantyú-zónát megfogva lefelé húzva a panel követi
+// az ujjat, egy küszöb felett elengedve bezáródik, alatta visszapattan a helyére.
+function setupSheetDrag(handleZoneId, cardId, closeFn){
+  const zone = document.getElementById(handleZoneId);
+  const card = document.getElementById(cardId);
+  let startY=0, dy=0, dragging=false;
+  zone.addEventListener('pointerdown', e=>{
+    dragging = true; startY = e.clientY; dy = 0;
+    card.style.transition = 'none';
+    try{ zone.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  zone.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    dy = Math.max(0, e.clientY-startY);
+    card.style.transform = `translateY(${dy}px)`;
+  });
+  function endDrag(){
+    if(!dragging) return;
+    dragging = false;
+    card.style.transition = '';
+    if(dy > 80){ card.style.transform = ''; closeFn(); }
+    else card.style.transform = '';
+  }
+  zone.addEventListener('pointerup', endDrag);
+  zone.addEventListener('pointercancel', endDrag);
+}
+function openMoreSheet(){ document.getElementById('moreSheet').style.display = 'flex'; lockBodyScroll(); }
 function closeMoreSheet(e){
   if(e && e.target && e.target.id!=='moreSheet') return;
   document.getElementById('moreSheet').style.display = 'none';
+  unlockBodyScroll();
 }
+setupSheetDrag('moreSheetHandle', 'moreSheetCard', closeMoreSheet);
 // Ugyanaz a probléma a napválasztó vasúti-sávval is (12 nap, csak ~5 fér ki görgetés nélkül) —
 // az alsó "Nap" gomb ugyanezt a fajta alulról felcsúszó, egyszerre látható listát nyitja.
 const dayPickerList = document.getElementById('dayPickerList');
@@ -1485,19 +1536,16 @@ days.forEach(d=>{
   b.onclick = ()=>{ goto('view-days'); showDay(d.id); closeDaySheet(); };
   dayPickerList.appendChild(b);
 });
-function openDaySheet(){ document.getElementById('daySheet').style.display = 'flex'; }
+function openDaySheet(){ document.getElementById('daySheet').style.display = 'flex'; lockBodyScroll(); }
 function closeDaySheet(e){
   if(e && e.target && e.target.id!=='daySheet') return;
   document.getElementById('daySheet').style.display = 'none';
+  unlockBodyScroll();
 }
+setupSheetDrag('daySheetHandle', 'daySheetCard', closeDaySheet);
 function updateBottomTabActive(id){
   document.querySelectorAll('.bottomTabBtn').forEach(b=>b.classList.remove('active'));
-  let target = null;
-  if(BOTTOM_TAB_VIEWS.includes(id)){
-    target = id==='view-days' ? 'tab-day' : id==='view-map' ? 'tab-map' : id==='view-food' ? 'tab-food' : 'tab-money';
-  } else {
-    target = 'tab-more';
-  }
+  let target = id==='view-days' ? 'tab-day' : (BOTTOM_TAB_MAP[id] || 'tab-more');
   const el = document.getElementById(target); if(el) el.classList.add('active');
 }
 function goto(id){
