@@ -880,7 +880,7 @@ const days = [
 {id:"d10", num:10, date:"09.25, Péntek", title:"Coney Island & Astoria", color:"var(--day10)", special:null, zones:["Astoria"],
  blocks:[
   {h:"Délelőtt–délután", items:[{n:"Coney Island", d:"tengerpart, móló, vidámpark"}]},
-  {h:"Késő délután", items:[{n:"Astoria Park", d:"Queens"}]},
+  {h:"Késő délután", items:[{n:"Astoria Park", d:"Queens"},{n:"Hunter's Point South Park", d:"✨ frissítve a bővült listából — látványos Manhattan-panoráma Long Island City-ből, kb. 15-20 perccel délebbre Astoriától (metróval/autóval), ha még belefér", q:"Hunter's Point South Park, Long Island City, NY"}]},
   {h:"Este", items:[{n:"Coney Island boardwalk esti fényekben", d:"✨ saját tipp — Luna Park esti fényei, ha még ott vagytok napnyugtakor", q:"Luna Park, Coney Island, New York"},{n:"Taverna Kyclades", d:"✨ saját tipp (nincs a listádon) — híres görög étterem Astoriában, foglalás ajánlott", q:"Taverna Kyclades, Astoria, New York"}]},
   {h:"Alternatíva — csak ha inkább ezt választanátok Coney Island helyett", items:[{n:"The Hamptons", d:"a listádon szerepel, de messze van (Long Island keleti vége, ~2–2,5 óra vonattal a Long Island Rail Roaddal Penn Stationtől, vagy autóval) — emiatt EGÉSZ napos kirándulás, nem fér bele Coney Island + Astoria mellé ugyanabba a napba. Ha ezt választjátok, inkább ez legyen az egész 10. nap, Coney Island/Astoria helyett.", q:"The Hamptons, New York"}]}
  ]},
@@ -1029,7 +1029,7 @@ function loadPacking(){
     const saved = localStorage.getItem('ny2026_packingList');
     if(saved){
       const parsed = JSON.parse(saved);
-      if(Array.isArray(parsed)) return parsed;
+      if(Array.isArray(parsed)) return parsed.map(cat=>({cat: cat.cat, items: Array.isArray(cat.items) ? cat.items : []}));
     }
   }catch(e){}
   // első betöltéskor stabil id-t kap minden tétel, hogy szerkesztéskor is megmaradjon a pipa-állapot
@@ -1322,7 +1322,10 @@ function applyRemoteState(remote){
     if(typeof refreshAllAnytimeBlocks==='function') refreshAllAnytimeBlocks();
   }
   if(Array.isArray(remote.packing)){
-    packing = remote.packing;
+    // Firebase RTDB eldobja az üres tömböket íráskor (pl. egy frissen létrehozott,
+    // még tétel nélküli kategóriát) — enélkül a normalizálás nélkül az items mezó
+    // hiányozna visszaolvasáskor, és a renderPacking() elszállna rajta.
+    packing = remote.packing.map(cat=>({cat: cat.cat, items: Array.isArray(cat.items) ? cat.items : []}));
     localStorage.setItem('ny2026_packingList', JSON.stringify(packing));
     if(typeof renderPacking==='function') renderPacking();
   }
@@ -1367,7 +1370,7 @@ function pushFullLocalSnapshot(){
   if(typeof anytimeOptions!=='undefined') anytimeOptions.forEach(o=>{
     const v = localStorage.getItem(atCheckedKey(o.id)); if(v!==null) checks['anytime-'+o.id]=v;
   });
-  if(typeof packing!=='undefined') packing.forEach(cat=>cat.items.forEach(it=>{
+  if(typeof packing!=='undefined') packing.forEach(cat=>(cat.items||[]).forEach(it=>{
     const v = localStorage.getItem('ny2026_pack-'+it.id); if(v!==null) checks['pack-'+it.id]=v;
   }));
   if(Object.keys(checks).length) fetch(SYNC_PATH+"/checks.json", {method:"PATCH", body: JSON.stringify(checks)}).catch(()=>{});
@@ -1999,7 +2002,7 @@ function renderPacking(){
     div.className='packcat';
     let html = `<h4 style="display:flex;align-items:center;justify-content:space-between;">${cat.cat}
       <a href="#" class="pinbtn" style="width:20px;height:20px;font-size:.6rem;background:#c0161a;flex:0 0 auto;" onclick="event.preventDefault();deletePackCategory(${ci})" title="Kategória törlése">✕</a></h4>`;
-    cat.items.forEach(it=>{
+    (cat.items||[]).forEach(it=>{
       const pid = 'pack-'+it.id;
       const checked = localStorage.getItem('ny2026_'+pid)==='1';
       html += `<div class="packrow ${checked?'checked':''}" id="prow-${pid}">
@@ -2056,7 +2059,7 @@ function addPackCategory(){
 }
 function deletePackCategory(ci){
   if(!confirm('Törlöd a(z) "'+packing[ci].cat+'" kategóriát, benne minden tétellel?')) return;
-  packing[ci].items.forEach(it=> localStorage.removeItem('ny2026_pack-'+it.id));
+  (packing[ci].items||[]).forEach(it=> localStorage.removeItem('ny2026_pack-'+it.id));
   packing.splice(ci,1);
   savePacking();
   syncWritePacking();

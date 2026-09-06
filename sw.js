@@ -30,7 +30,8 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          const resClone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, resClone));
           return res;
         })
         .catch(() => caches.match(e.request).then(r => r || caches.match('./NY_utiterv.html')))
@@ -39,7 +40,8 @@ self.addEventListener('fetch', e => {
   }
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-      caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+      const resClone = res.clone();
+      caches.open(CACHE).then(c => c.put(e.request, resClone));
       return res;
     }))
   );
