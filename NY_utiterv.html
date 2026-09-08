@@ -440,7 +440,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <div class="view" id="view-food">
   <div class="sign">
     <h2><span class="em">🍔</span>Étterem-felfedező</h2>
-    <p style="margin-top:0;color:var(--muted);font-size:.86rem;">Keress vagy szűrj zóna szerint — mind az 51 étterem a "New york kaja" gyűjteményedből, de itt már nem a gyűjteménybe pinelt egyetlen cím a forrás, hanem kutatással ellenőrzött, valódi helyszínlista minden étteremhez. Ahol csak egy hely van, ott a 📍 gomb egyenesen odavisz. Ahol több valódi NYC-i helyszíne is van (🔗 jelzéssel, a szám mutatja hányat), ott a 🔗 gomb egy listát nyit meg az összes ellenőrzött helyszínnel — így nem egy másik napra bejelölt fiókra navigálsz. A napi terveknél ugyanez a helyszínlista dönti el, hogy egy étteremnek van-e ténylegesen fiókja az aznapi városrészben.</p>
+    <p style="margin-top:0;color:var(--muted);font-size:.86rem;">Keress vagy szűrj zóna szerint — mind az 52 étterem a "New york kaja" gyűjteményedből, de itt már nem a gyűjteménybe pinelt egyetlen cím a forrás, hanem kutatással ellenőrzött, valódi helyszínlista minden étteremhez. Ahol csak egy hely van, ott a 📍 gomb egyenesen odavisz. Ahol több valódi NYC-i helyszíne is van (🔗 jelzéssel, a szám mutatja hányat), ott a 🔗 gomb egy listát nyit meg az összes ellenőrzött helyszínnel — így nem egy másik napra bejelölt fiókra navigálsz. A napi terveknél ugyanez a helyszínlista dönti el, hogy egy étteremnek van-e ténylegesen fiókja az aznapi városrészben.</p>
     <input class="searchbar" id="foodsearch" placeholder="Keresés név vagy konyha szerint… (pl. bagel, pizza, burger)">
     <div class="chipbar" id="areachips"></div>
     <div class="rcount" id="rcount"></div>
@@ -786,11 +786,9 @@ const restaurants = [
  {n:"Rumba Cubana", t:"Kubai étterem (Guttenberg, NJ — kb. 10 perc a szállástól)", p:"20–70 $", r:"4,5", locs:["Szállás mellett (NJ)"]},
  {n:"Las Chicas Bakery & Cafe", t:"Pékség / kávézó (Union City, NJ — kb. 10 perc a szállástól)", p:"1–20 $", r:"4,3", locs:["Szállás mellett (NJ)"]},
  {n:"Six Corners Cafe", t:"Kávézó / reggeli (North Bergen, NJ — a szállással egy városrészben)", p:"10–20 $", r:"4,2", locs:["Szállás mellett (NJ)"]},
- {n:"Fifth Avenue Diner", t:"Amerikai gyorsétkezde / diner (Park Slope, Brooklyn — egyik napi útvonalba sem esik bele, csak ha arra jártok)", p:"10–20 $", r:"4,2", locs:["Park Slope"]}
+ {n:"Fifth Avenue Diner", t:"Amerikai gyorsétkezde / diner (Park Slope, Brooklyn — egyik napi útvonalba sem esik bele, csak ha arra jártok)", p:"10–20 $", r:"4,2", locs:["Park Slope"]},
+ {n:"The Cheesecake Factory", t:"Amerikai (Newport Centre Mall, Jersey City, NJ — nincs valódi manhattani helyszíne, de a szállástól kb. 15-20 perc)", p:"20–30 $", r:"4,1", locs:["Szállás mellett (NJ)"]}
 ];
-// Megjegyzés: a "The Cheesecake Factory" szándékosan törölve — kutatás szerint nincs
-// valódi manhattani helyszíne (a legközelebbi Elmhurst, Queens), a régi Midtown/UWS
-// jelölés téves volt.
 const areaColors = {"Midtown":"#ee352e","West Village":"#b933ad","Financial District":"#0039a6","Dumbo":"#996633",
   "Williamsburg":"#e91e8c","Harlem":"#6cbe45","Upper West Side":"#fccc0a","Upper East Side":"#00933c",
   "East Village":"#00add0","Chelsea":"#ff6319","SoHo/Tribeca":"#4d5357","Astoria":"#a7a9ac",
@@ -802,53 +800,52 @@ const areaColors = {"Midtown":"#ee352e","West Village":"#b933ad","Financial Dist
    q:"..."   -> pontosabb Google Maps keresőkifejezés, ha az item neve nem elég
    ============================================================ */
 const days = [
-{id:"d1", num:1, date:"09.16, Szerda", title:"Érkezés", color:"var(--day1)", special:null, zones:["Bárhol","Midtown","Szállás mellett (NJ)"],
+{id:"d1", num:1, date:"09.16, Szerda", title:"Érkezés", color:"var(--day1)", special:null, zones:["Szállás mellett (NJ)"],
  blocks:[
   {h:"Délután — érkezés", items:[
     {n:"EWR landolás 13:50, útlevélkezelés, poggyász", loc:false},
     {n:"Transzfer a szállásra", d:"taxi/Uber ajánlott, ld. Közlekedés fül", loc:false},
     {n:"Bejelentkezés", d:"1815 43rd St, North Bergen, NJ 07047", q:"1815 43rd St, North Bergen, NJ"}
   ]},
-  {h:"Este — első benyomás New Yorkról", items:[
-    {n:"Times Square", d:"esti fényekben — a Port Authority busz pont ide/innen indul, tehát útba esik a szállás felé menet, nem kell külön kitérő", q:"Times Square, New York"},
-    {n:"Washington Park", d:"ha inkább egy laza, helyi séta kell a szállás közelében (Union City/West New York)", q:"40.7525466,-74.0415112"},
-    {n:"Vacsora a szállás közelében", d:"✨ frissítve a bővült étterem-listából — Rumba Cubana (kubai, Guttenberg), Las Chicas Bakery & Cafe vagy Six Corners Cafe (mindkettő North Bergen/Union City) mind 10 percre a szállástól, jó választás az érkezés esti fáradtságával, nem kell bemenni Manhattanbe", q:"Rumba Cubana, Guttenberg, NJ"}
+  {h:"Este — laza séta a szállás közelében (Manhattanbe már nem megyünk be ma)", items:[
+    {n:"Washington Park", d:"rövid, laza séta a szállástól 5 percre (Union City/West New York)", q:"40.7525466,-74.0415112"},
+    {n:"Hudson River Waterfront Walkway", d:"innen tovább Jersey City-be — folyóparti sétány, ingyenes esti panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
+    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
+    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
+    {n:"Empty Sky — 9/11-emlékmű", d:"New Jersey állam hivatalos 9/11-emlékműve, közvetlen kilátással a Manhattan-panorámára", q:"Empty Sky Memorial, Jersey City, NJ"},
+    {n:"Statue Of Liberty Vista", d:"ingyenes kilátópont a Szabadság-szoborra Jersey City felől", q:"Statue of Liberty Vista, Jersey City, NJ"},
+    {n:"Hamilton Park", d:"hangulatos városi park Jersey City belvárosában, útban visszafelé", q:"Hamilton Park, Jersey City, NJ"}
   ]},
-  {h:"Este — alternatíva: Jersey City folyóparti séta (ha inkább nyugodt, közeli programot szeretnétek Times Square helyett)", items:[
-    {n:"Hudson River Waterfront Walkway", d:"✨ frissítve a bővült listából — folyóparti sétány Jersey City-ben, ingyenes esti panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
-    {n:"J. Owen Grundy Park", d:"✨ frissítve a bővült listából — parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
-    {n:"1 Wharf Plaza Park", d:"✨ frissítve a bővült listából — kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
-    {n:"Empty Sky — 9/11-emlékmű", d:"✨ frissítve a bővült listából — New Jersey állam hivatalos 9/11-emlékműve, közvetlen kilátással a Manhattan-panorámára", q:"Empty Sky Memorial, Jersey City, NJ"},
-    {n:"Statue Of Liberty Vista", d:"✨ frissítve a bővült listából — ingyenes kilátópont a Szabadság-szoborra Jersey City felől, ha a 7. napi komp mellett/helyett is szeretnétek egy távoli rálátást", q:"Statue of Liberty Vista, Jersey City, NJ"},
-    {n:"Hamilton Park", d:"✨ frissítve a bővült listából — hangulatos városi park Jersey City belvárosában, ha még maradna idő/energia", q:"Hamilton Park, Jersey City, NJ"}
+  {h:"Este — vacsora a szállás közelében", items:[
+    {n:"Vacsora: Rumba Cubana", d:"kubai étterem Guttenbergben, kb. 10 perc a szállástól — jó választás az érkezés esti fáradtságával", q:"Rumba Cubana, Guttenberg, NJ"}
   ]}
  ]},
 {id:"d2", num:2, date:"09.17, Csütörtök", title:"Midtown Dél: Empire State & Flatiron", color:"var(--day2)", special:null, zones:["Midtown"],
  blocks:[
   {h:"Reggel", items:[{n:"Bryant Park"},{n:"New York Public Library", d:"Stephen A. Schwarzman Building"}]},
-  {h:"Délelőtt", items:[{n:"Empire State Building", d:"86. emeleti kilátó — foglalj előre!"}]},
-  {h:"Délután", items:[{n:"Macy's", d:"Herald Square"},{n:"Flatiron Building"},{n:"Madison Square Garden"}]},
+  {h:"Délelőtt", items:[{n:"Empire State Building", d:"csak kívülről nézitek meg, felmenni nem tervezünk — a kilátózásra a Top of the Rock (3. nap) és a SUMMIT One Vanderbilt (3. nap) van betervezve"}]},
+  {h:"Délután", items:[{n:"Macy's", d:"Herald Square"},{n:"Flatiron Building", d:"csak kívülről"},{n:"Madison Square Garden", d:"csak kívülről"}]},
   {h:"Este", items:[{n:"230 Fifth Rooftop Bar", d:"✨ saját tipp (nincs a listádon) — rooftop bár, kilátás az Empire State Buildingre, foglalás ajánlott", q:"230 Fifth Rooftop Bar, New York"}]}
  ]},
-{id:"d3", num:3, date:"09.18, Péntek", title:"Midtown Észak: Rockefeller & 5th Ave", color:"var(--day3)", special:null, zones:["Midtown"],
+{id:"d3", num:3, date:"09.18, Péntek", title:"Midtown Észak: Times Square, Rockefeller & 5th Ave", color:"var(--day3)", special:null, zones:["Midtown"],
  blocks:[
-  {h:"Reggel (9:00-ra érj oda)", items:[{n:"Rockefeller Center"},{n:"Top of The Rock", d:"kilátóterasz — foglalt jegy ajánlott"}]},
+  {h:"Reggel (9:00-ra érj oda)", items:[{n:"Times Square", d:"korán, még kevesebb tömeggel — 5 perc séta a Rockefeller Centerig", q:"Times Square, New York"},{n:"Rockefeller Center", d:"csak az épület/plaza megnézése — a kilátózás estére van betervezve"}]},
   {h:"Délelőtt", items:[{n:"Szent Patrik székesegyház", q:"St. Patrick's Cathedral, New York"},{n:"Trump-torony", q:"Trump Tower, New York"},{n:"5th Ave", q:"5th Avenue, New York"},{n:"Apple Fifth Avenue", d:"✨ frissítve a bővült listából — ikonikus üvegkocka Apple Store az 5th Ave-en", q:"Apple Fifth Avenue, New York"},{n:"UNIQLO 5th Avenue", d:"✨ frissítve a bővült listából", q:"UNIQLO 5th Avenue, New York"},{n:"455 Madison Ave"},{n:"Lotte New York Palace", d:"5 csillagos szálloda, Madison Ave"},{n:"The Broadway Theatre", d:"1681 Broadway"},{n:"The Plaza", d:"5th Ave / Central Park sarok"}]},
-  {h:"Délután", items:[{n:"Grand Central Terminal"},{n:"SUMMIT One Vanderbilt"},{n:"Tudor City Bridge"}]},
-  {h:"Este", items:[{n:"Bar SixtyFive / Rainbow Room", d:"✨ saját tipp (nincs a listádon) — koktélbár a Rockefeller Center 65. emeletén, panorámás kilátás, foglalás erősen ajánlott", q:"Bar SixtyFive, Rockefeller Center, New York"},{n:"The Campbell", d:"✨ frissítve a bővült listából — elegáns, egykori irodából lett koktélbár a Grand Central Terminalban, alternatíva ha a Rainbow Room tele/túl drága", q:"The Campbell, New York"}]}
+  {h:"Délután", items:[{n:"Grand Central Terminal"},{n:"SUMMIT One Vanderbilt", d:"kilátóterasz — ide TÉNYLEG felmegyünk, napközben, jegy előre foglalva"},{n:"Tudor City Bridge"},{n:"The Campbell", d:"elegáns, egykori irodából lett koktélbár a Grand Central Terminalban — délutáni ital a SUMMIT után", q:"The Campbell, New York"}]},
+  {h:"Este — naplemente a Top of the Rockból", items:[{n:"Top of The Rock", d:"kilátóterasz — ide TÉNYLEG felmegyünk, kifejezetten napnyugtakor, jegy előre foglalva (kb. 18:45 körül van napnyugta szeptember közepén)"}]}
  ]},
 {id:"d4", num:4, date:"09.19, Szombat", title:"Upper West Side & Central Park", color:"var(--day4)", special:null, zones:["Upper West Side"],
  blocks:[
-  {h:"Central Park", items:[{n:"Central Park Boathouse", d:"reggeli/kávé itt"},{n:"The Mall and Literary Walk"},{n:"Bethesda Terrace"},{n:"Bethesda Fountain", d:"✨ frissítve a bővült listából — a Google Maps szerint jelenleg átmenetileg zárva/felújítás alatt, érdemes helyszínen ellenőrizni"},{n:"Bow Bridge"},
+  {h:"Central Park", items:[{n:"Central Park Boathouse", d:"reggeli/kávé itt"},{n:"The Mall and Literary Walk"},{n:"Bethesda Terrace"},{n:"Bethesda Fountain", d:"a Google Maps szerint jelenleg átmenetileg zárva/felújítás alatt, érdemes helyszínen ellenőrizni"},{n:"Bow Bridge"},
     {n:"Strawberry Fields"},{n:"Sheep Meadow"},{n:"The Great Lawn"},{n:"Belvedere Castle"},{n:"Umpire Rock"},{n:"Gapstow Bridge"}]},
-  {h:"Upper West Side", items:[{n:"American Museum of Natural History"},{n:"Juilliard iskola", d:"Lincoln Center", q:"The Juilliard School, New York"},{n:"The Empire Hotel", d:"4 csillagos szálloda, Lincoln Center mellett"},{n:"Apple Upper West Side", d:"✨ frissítve a bővült listából", q:"Apple Upper West Side, New York"}]},
+  {h:"Upper West Side", items:[{n:"American Museum of Natural History", d:"ide TÉNYLEG bemegyünk — foglalj időpontot/jegyet előre, számolj 2-3 órával"},{n:"Juilliard iskola", d:"Lincoln Center", q:"The Juilliard School, New York"},{n:"The Empire Hotel", d:"4 csillagos szálloda, Lincoln Center mellett"},{n:"Apple Upper West Side", d:"✨ frissítve a bővült listából", q:"Apple Upper West Side, New York"}]},
   {h:"Este", items:[{n:"Esti séta a Central Parkban naplementekor", d:"✨ saját tipp — a Bow Bridge és a Bethesda Terrace naplementekor különösen szép", q:"Bow Bridge, Central Park, New York"},{n:"Lincoln Center esti előadás", d:"✨ saját tipp (nincs a listádon) — opcionális, ha van kedvetek operához/baletthez", q:"Lincoln Center, New York"}]}
  ]},
-{id:"d5", num:5, date:"09.20, Vasárnap", title:"Upper East Side & Met (+ Harlem este)", color:"var(--day5)", special:null, zones:["Upper East Side","Harlem"],
+{id:"d5", num:5, date:"09.20, Vasárnap", title:"Upper East Side & Museum Mile (+ Harlem este)", color:"var(--day5)", special:null, zones:["Upper East Side","Harlem"],
  blocks:[
-  {h:"Délelőtt (2-3 óra)", items:[{n:"Metropolitan Művészeti Múzeum", d:"foglalj időpontot online", q:"Metropolitan Museum of Art, New York"}]},
-  {h:"Kora délután", items:[{n:"Museum of the City of New York"},{n:"Roosevelt Island Tramway"},{n:"Upper East Side séta", q:"Upper East Side, New York"},{n:"995 Fifth Avenue"},{n:"Archibald Townhouse", d:"Gossip Girl forgatási helyszín, 4 E 74th St", q:"4 East 74th Street, New York"}]},
-  {h:"Este (válassz egyet)", items:[{n:"Bemelmans Bar", d:"✨ saját tipp (nincs a listádon) — klasszikus zongorabár a Carlyle Hotelben, UES, foglalás ajánlott, ha a napot a Museum Mile környékén fejezitek", q:"Bemelmans Bar, New York"},{n:"Ginny's Supper Club", d:"✨ saját tipp (nincs a listádon) — élő jazz és vacsora Harlemben, a Red Rooster alatt, foglalás ajánlott, ha inkább átmentek Harlembe estére (a 4/5/6-tal könnyen elérhető a Met-től)", q:"Ginny's Supper Club, New York"}]}
+  {h:"Délelőtt", items:[{n:"Metropolitan Művészeti Múzeum", d:"csak az épületet nézitek meg kívülről (a lépcsőn is érdemes fotózkodni) — a napi múzeum-programunk az AMNH, Intrepid és 9/11 Memorial, ide most nem megyünk be", q:"Metropolitan Museum of Art, New York"}]},
+  {h:"Kora délután", items:[{n:"Museum of the City of New York", d:"csak kívülről"},{n:"Bemelmans Bar", d:"✨ saját tipp (nincs a listádon) — klasszikus zongorabár a Carlyle Hotelben, UES — délutáni koktélnak is jó, nem csak esti programnak", q:"Bemelmans Bar, New York"},{n:"Roosevelt Island Tramway", d:"opcionális rövid libegő-kirándulás, ha időben belefér, metróáron"},{n:"Upper East Side séta", q:"Upper East Side, New York"},{n:"995 Fifth Avenue"},{n:"Archibald Townhouse", d:"Gossip Girl forgatási helyszín, 4 E 74th St", q:"4 East 74th Street, New York"}]},
+  {h:"Este — Harlem", items:[{n:"Ginny's Supper Club", d:"✨ saját tipp (nincs a listádon) — élő jazz és vacsora Harlemben, a Red Rooster alatt, foglalás ajánlott (a 4/5/6-tal könnyen elérhető a Met-től)", q:"Ginny's Supper Club, New York"},{n:"Vacsora Harlemben: Sylvia's Restaurant", d:"soul food, ha nem a Ginny's-nél vacsoráztok", q:"Sylvia's Restaurant, Harlem, New York"}]}
  ]},
 {id:"d6", num:6, date:"09.21, Hétfő", title:"Brooklyn: DUMBO & Brooklyn híd", color:"var(--day6)", special:"🏀 20:00 Liberty–Atlanta Dream", zones:["Dumbo"],
  blocks:[
@@ -858,15 +855,16 @@ const days = [
  ]},
 {id:"d7", num:7, date:"09.22, Kedd", title:"Downtown: Financial District & Szabadság-szobor", color:"var(--day7)", special:"⛴️ Foglalt komjegy kell", zones:["Financial District"],
  blocks:[
-  {h:"Reggel — Financial District", items:[{n:"9/11 Memorial & Museum"},{n:"One World Trade Center"},{n:"One World Observatory", d:"foglalt jegy ajánlott"},{n:"Oculus World Trade Center"}]},
-  {h:"Délelőtt", items:[{n:"Rockefeller Park", d:"Battery Park City"},{n:"Charging Bull"},{n:"Wall Street"},{n:"New York Stock Exchange"},{n:"The Battery"},{n:"Whitehall Terminal", d:"ingyenes Staten Island Ferry"}]},
+  {h:"Reggel — Financial District", items:[{n:"9/11 Memorial & Museum", d:"ide TÉNYLEG bemegyünk — foglalj időpontot előre, számolj 2-3 órával"},{n:"One World Trade Center", d:"csak kívülről"},{n:"One World Observatory", d:"csak kívülről, felmenni nem tervezünk — a kilátózásra a Top of the Rock és a SUMMIT One Vanderbilt van betervezve"},{n:"Oculus World Trade Center"}]},
+  {h:"Délelőtt", items:[{n:"Rockefeller Park", d:"Battery Park City"},{n:"Charging Bull"},{n:"Wall Street"},{n:"New York Stock Exchange", d:"csak kívülről"},{n:"The Battery"},{n:"Whitehall Terminal", d:"ingyenes Staten Island Ferry"}]},
   {h:"Délután — komp", items:[{n:"Szabadság-szobor", d:"komp Battery Parkból — ELŐRE foglalt jegy!", q:"Statue of Liberty, New York, NY, USA"},{n:"Ellis Island"}]},
   {h:"Este", items:[{n:"Overstory", d:"✨ saját tipp (nincs a listádon) — rooftop bár a Financial District felett, 70. emelet, foglalás ajánlott", q:"Overstory, New York"}]}
  ]},
-{id:"d8", num:8, date:"09.23, Szerda", title:"Greenwich Village, West Village & Chelsea", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["West Village","Chelsea","Midtown"],
+{id:"d8", num:8, date:"09.23, Szerda", title:"Greenwich Village, West Village, Chelsea & Intrepid", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["West Village","Chelsea","Midtown"],
  blocks:[
-  {h:"Reggel — Greenwich / West Village", items:[{n:"Greenwich Village"},{n:"Washington Square Park"},{n:"New York-i Egyetem (NYU)", d:"✨ frissítve a bővült listából — a campus a Washington Square Park körül terül el, séta közben úgyis átmentek rajta", q:"New York University, New York"},{n:"West Village", q:"West Village, New York"},{n:"Carrie Bradshaw's Apartment", d:"66 Perry St", q:"66 Perry St, New York"},{n:"Friends Apartment Building", d:"90 Bedford St", q:"90 Bedford St, New York"}]},
-  {h:"Délután — Hudson River / Chelsea", items:[{n:"High Line Park"},{n:"Chelsea Market"},{n:"Google Store Chelsea", d:"✨ frissítve a bővült listából", q:"Google Store Chelsea, New York"},{n:"Little Island"},{n:"Old Pier 48"},{n:"Hudson River Park Trust"},{n:"Vessel"},{n:"Hudson Yards"},{n:"Edge NYC"},{n:"Intrepid Museum", d:"kicsit északabbra, Pier 86 — ha van még energia/idő"}]},
+  {h:"Reggel — Greenwich / West Village", items:[{n:"Greenwich Village"},{n:"Washington Square Park"},{n:"New York-i Egyetem (NYU)", d:"a campus a Washington Square Park körül terül el, séta közben úgyis átmentek rajta", q:"New York University, New York"},{n:"West Village", q:"West Village, New York"},{n:"Carrie Bradshaw's Apartment", d:"66 Perry St", q:"66 Perry St, New York"},{n:"Friends Apartment Building", d:"90 Bedford St", q:"90 Bedford St, New York"}]},
+  {h:"Délután — Hudson River / Chelsea", items:[{n:"High Line Park"},{n:"Chelsea Market"},{n:"Google Store Chelsea", d:"✨ frissítve a bővült listából", q:"Google Store Chelsea, New York"},{n:"Little Island"},{n:"Old Pier 48"},{n:"Hudson River Park Trust"},{n:"Vessel", d:"csak kívülről/fotó"},{n:"Hudson Yards"},{n:"Edge NYC", d:"csak kívülről/fotó, felmenni nem tervezünk — a kilátózásra a Top of the Rock és a SUMMIT One Vanderbilt van betervezve"}]},
+  {h:"Késő délután — Intrepid Museum", items:[{n:"Intrepid Museum", d:"ide TÉNYLEG bemegyünk — Pier 86, számolj 1,5-2 órával a Lion King előtt, foglalj jegyet előre", q:"Intrepid Museum, New York"}]},
   {h:"Este ~19:00 — KÖTELEZŐ", items:[{n:"The Lion King", d:"Minskoff Theatre, 200 West 45th St — ellenőrizd az időt!", q:"Minskoff Theatre, New York"}]}
  ]},
 {id:"d9", num:9, date:"09.24, Csütörtök", title:"Downtown: SoHo, Tribeca, Chinatown & bevásárlás", color:"var(--day9)", special:null, zones:["SoHo/Tribeca"],
@@ -877,22 +875,22 @@ const days = [
   {h:"Délután — bevásárlás", items:[{n:"Century 21 NYC"},{n:"Target"},{n:"T.J. Maxx"},{n:"Marshalls"},{n:"Ross Dress for Less"},{n:"Best Buy", d:"✨ frissítve a bővült listából — elektronika, ha kimaradt volna valami (töltő, adapter stb.)"},{n:"Trader Joe's", d:"✨ frissítve a bővült listából — praktikus, ha inkább magatoknak vásárolnátok be egy szobai nassolnivalót/reggelit az adómentes alap-élelmiszer kategóriában"}]},
   {h:"Este", items:[{n:"Watermark Bar", d:"✨ saját tipp (nincs a listádon) — dokk-bár a Pier 15-nél, South Street Seaport, kilátás a Brooklyn hídra, foglalás ajánlott", q:"Watermark Bar, Pier 15, New York"}]}
  ]},
-{id:"d10", num:10, date:"09.25, Péntek", title:"Coney Island & Astoria", color:"var(--day10)", special:null, zones:["Astoria"],
+{id:"d10", num:10, date:"09.25, Péntek", title:"Kirándulás: The Hamptons", color:"var(--day10)", special:"🚆 Egész napos kirándulás", zones:["Hamptons"],
  blocks:[
-  {h:"Délelőtt–délután", items:[{n:"Coney Island", d:"tengerpart, móló, vidámpark"}]},
-  {h:"Késő délután", items:[{n:"Astoria Park", d:"Queens"},{n:"Hunter's Point South Park", d:"✨ frissítve a bővült listából — látványos Manhattan-panoráma Long Island City-ből, kb. 15-20 perccel délebbre Astoriától (metróval/autóval), ha még belefér", q:"Hunter's Point South Park, Long Island City, NY"}]},
-  {h:"Este", items:[{n:"Coney Island boardwalk esti fényekben", d:"✨ saját tipp — Luna Park esti fényei, ha még ott vagytok napnyugtakor", q:"Luna Park, Coney Island, New York"},{n:"Taverna Kyclades", d:"✨ saját tipp (nincs a listádon) — híres görög étterem Astoriában, foglalás ajánlott", q:"Taverna Kyclades, Astoria, New York"}]},
-  {h:"Alternatíva — csak ha inkább ezt választanátok Coney Island helyett", items:[{n:"The Hamptons", d:"a listádon szerepel, de messze van (Long Island keleti vége, ~2–2,5 óra vonattal a Long Island Rail Roaddal Penn Stationtől, vagy autóval) — emiatt EGÉSZ napos kirándulás, nem fér bele Coney Island + Astoria mellé ugyanabba a napba. Ha ezt választjátok, inkább ez legyen az egész 10. nap, Coney Island/Astoria helyett.", q:"The Hamptons, New York"}]}
+  {h:"Reggel — kiutazás", items:[{n:"Long Island Rail Road Penn Stationtől", d:"~2-2,5 óra a keleti Hamptons állomásokig — indulj korán reggel, ez egy egész napos program", loc:false},{n:"The Hamptons", d:"a listádon szerepel — tengerpart, kisvárosi hangulat, ez lesz a teljes 10. nap programja, Coney Island és Astoria emiatt átkerült a 11. napra", q:"The Hamptons, New York"}]},
+  {h:"Este — hazaút", items:[{n:"Vissza a LIRR-rel North Bergen felé", d:"számolj még kb. 2-2,5 órával", loc:false}]}
  ]},
-{id:"d11", num:11, date:"09.26, Szombat", title:"Williamsburg & Smorgasburg", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg"],
+{id:"d11", num:11, date:"09.26, Szombat", title:"Coney Island, Astoria & Williamsburg", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg","Astoria"],
  blocks:[
-  {h:"Délelőtt", items:[{n:"Urban Jungle", d:"használt ruha bolt"},{n:"On Store NYC Williamsburg", d:"✨ frissítve a bővült listából — sportruházati bolt"},{n:"North 5th Street Pier and Park"}]},
+  {h:"Kora reggel — Coney Island", items:[{n:"Coney Island", d:"tengerpart, móló, vidámpark — korán érdemes, hogy még beleférjen Astoria és Williamsburg is aznap", q:"Coney Island, New York"}]},
+  {h:"Délelőtt — Williamsburg", items:[{n:"Urban Jungle", d:"használt ruha bolt"},{n:"On Store NYC Williamsburg", d:"✨ frissítve a bővült listából — sportruházati bolt"},{n:"North 5th Street Pier and Park"}]},
   {h:"11:00–18:00", items:[{n:"Smorgasburg", d:"Williamsburg waterfront street-food piac"}]},
-  {h:"Este", items:[{n:"Westlight Rooftop", d:"✨ saját tipp (nincs a listádon) — a William Vale szálloda tetején, ikonikus Manhattan-panoráma, foglalás ajánlott", q:"Westlight Rooftop Bar, Brooklyn"}]}
+  {h:"Este — Astoria", items:[{n:"Astoria Park", d:"Queens"},{n:"Hunter's Point South Park", d:"látványos Manhattan-panoráma Long Island City-ből, kb. 15-20 perccel délebbre Astoriától", q:"Hunter's Point South Park, Long Island City, NY"},{n:"Taverna Kyclades", d:"✨ saját tipp (nincs a listádon) — híres görög étterem Astoriában, foglalás ajánlott", q:"Taverna Kyclades, Astoria, New York"}]},
+  {h:"Éjszaka", items:[{n:"Westlight Rooftop", d:"✨ saját tipp (nincs a listádon) — a William Vale szálloda tetején Williamsburgben, ikonikus Manhattan-panoráma, ha még van energia visszamenni, foglalás ajánlott", q:"Westlight Rooftop Bar, Brooklyn"}]}
  ]},
 {id:"d12", num:12, date:"09.27, Vasárnap", title:"Utolsó nap / hazaút", color:"var(--day12)", special:"🧳 21:50 JFK indulás", zones:["Midtown","Szállás mellett (NJ)"],
  blocks:[
-  {h:"Reggel", items:[{n:"Kijelentkezés a szállásról", loc:false},{n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false},{n:"Reggeli a Six Corners Cafe-ban", d:"✨ frissítve a bővült listából — North Bergen-i kávézó, szó szerint a szállás városrészében, jó választás egy nyugodt utolsó reggelihez", q:"Six Corners Cafe, North Bergen, NJ"}]},
+  {h:"Reggel", items:[{n:"Kijelentkezés a szállásról", loc:false},{n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false},{n:"Reggeli a Six Corners Cafe-ban", d:"North Bergen-i kávézó, szó szerint a szállás városrészében, jó választás egy nyugodt utolsó reggelihez", q:"Six Corners Cafe, North Bergen, NJ"}]},
   {h:"Délelőtt–délután", items:[{n:"Pótold, ami kimaradt a listából", loc:false},{n:"Utolsó séták, bevásárlás", loc:false}]},
   {h:"~17:30–18:00", items:[{n:"Csomagok felvétele", loc:false},{n:"Indulás JFK felé", q:"John F. Kennedy International Airport, New York"}]},
   {h:"Este", items:[{n:"Ma este már nincs külön program — 21:50-kor a levegőben lesztek, irány haza", loc:false}]}
