@@ -800,21 +800,19 @@ const areaColors = {"Midtown":"#ee352e","West Village":"#b933ad","Financial Dist
    q:"..."   -> pontosabb Google Maps keresőkifejezés, ha az item neve nem elég
    ============================================================ */
 const days = [
-{id:"d1", num:1, date:"09.16, Szerda", title:"Érkezés", color:"var(--day1)", special:null, zones:["Szállás mellett (NJ)"],
+{id:"d1", num:1, date:"09.16, Szerda", title:"Érkezés", color:"var(--day1)", special:null, zones:["Szállás mellett (NJ)","Chelsea","Midtown"],
  blocks:[
   {h:"Délután — érkezés", items:[
     {n:"EWR landolás 13:50, útlevélkezelés, poggyász", loc:false},
     {n:"Transzfer a szállásra", d:"taxi/Uber ajánlott, ld. Közlekedés fül", loc:false},
     {n:"Bejelentkezés", d:"1815 43rd St, North Bergen, NJ 07047", q:"1815 43rd St, North Bergen, NJ"}
   ]},
-  {h:"Este — laza séta a szállás közelében (Manhattanbe már nem megyünk be ma)", items:[
-    {n:"Washington Park", d:"rövid, laza séta a szállástól 5 percre (Union City/West New York)", q:"40.7525466,-74.0415112"},
-    {n:"Hudson River Waterfront Walkway", d:"innen tovább Jersey City-be — folyóparti sétány, ingyenes esti panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
-    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
-    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
-    {n:"Empty Sky — 9/11-emlékmű", d:"New Jersey állam hivatalos 9/11-emlékműve, közvetlen kilátással a Manhattan-panorámára", q:"Empty Sky Memorial, Jersey City, NJ"},
-    {n:"Statue Of Liberty Vista", d:"ingyenes kilátópont a Szabadság-szoborra Jersey City felől", q:"Statue of Liberty Vista, Jersey City, NJ"},
-    {n:"Hamilton Park", d:"hangulatos városi park Jersey City belvárosában, útban visszafelé", q:"Hamilton Park, Jersey City, NJ"}
+  {h:"Este — első kiruccanás Manhattanbe: Chelsea & Times Square", items:[
+    {n:"Google Store Chelsea", d:"gyors bevásárlás/körülnézés, a Lincoln Tunnelen át könnyen elérhető a szállástól", q:"Google Store Chelsea, New York"},
+    {n:"Times Square", d:"esti fényekben, csak a közvetlen környéke — a nagy 5th Ave-i séta a 3. napra van betervezve", q:"Times Square, New York"}
+  ]},
+  {h:"Este — vissza a szállás felé", items:[
+    {n:"Washington Park", d:"rövid megálló a szállás előtt, ha még van energia (Union City/West New York) — a többi Jersey City-i helyszín (Hudson River Waterfront Walkway, Empty Sky-emlékmű stb.) a 12. napra van betervezve, amikor úgyis a szállás közelében vagytok indulás előtt", q:"40.7525466,-74.0415112"}
   ]},
   {h:"Este — vacsora a szállás közelében", items:[
     {n:"Vacsora: Rumba Cubana", d:"kubai étterem Guttenbergben, kb. 10 perc a szállástól — jó választás az érkezés esti fáradtságával", q:"Rumba Cubana, Guttenberg, NJ"}
@@ -827,9 +825,9 @@ const days = [
   {h:"Délután", items:[{n:"Macy's", d:"Herald Square"},{n:"Flatiron Building", d:"csak kívülről"},{n:"Madison Square Garden", d:"csak kívülről"}]},
   {h:"Este", items:[{n:"230 Fifth Rooftop Bar", d:"✨ saját tipp (nincs a listádon) — rooftop bár, kilátás az Empire State Buildingre, foglalás ajánlott", q:"230 Fifth Rooftop Bar, New York"}]}
  ]},
-{id:"d3", num:3, date:"09.18, Péntek", title:"Midtown Észak: Times Square, Rockefeller & 5th Ave", color:"var(--day3)", special:null, zones:["Midtown"],
+{id:"d3", num:3, date:"09.18, Péntek", title:"Midtown Észak: Rockefeller & 5th Ave", color:"var(--day3)", special:null, zones:["Midtown"],
  blocks:[
-  {h:"Reggel (9:00-ra érj oda)", items:[{n:"Times Square", d:"korán, még kevesebb tömeggel — 5 perc séta a Rockefeller Centerig", q:"Times Square, New York"},{n:"Rockefeller Center", d:"csak az épület/plaza megnézése — a kilátózás estére van betervezve"}]},
+  {h:"Reggel (9:00-ra érj oda)", items:[{n:"Rockefeller Center", d:"csak az épület/plaza megnézése — a kilátózás estére van betervezve"}]},
   {h:"Délelőtt", items:[{n:"Szent Patrik székesegyház", q:"St. Patrick's Cathedral, New York"},{n:"Trump-torony", q:"Trump Tower, New York"},{n:"5th Ave", q:"5th Avenue, New York"},{n:"Apple Fifth Avenue", d:"✨ frissítve a bővült listából — ikonikus üvegkocka Apple Store az 5th Ave-en", q:"Apple Fifth Avenue, New York"},{n:"UNIQLO 5th Avenue", d:"✨ frissítve a bővült listából", q:"UNIQLO 5th Avenue, New York"},{n:"455 Madison Ave"},{n:"Lotte New York Palace", d:"5 csillagos szálloda, Madison Ave"},{n:"The Broadway Theatre", d:"1681 Broadway"},{n:"The Plaza", d:"5th Ave / Central Park sarok"}]},
   {h:"Délután", items:[{n:"Grand Central Terminal"},{n:"SUMMIT One Vanderbilt", d:"kilátóterasz — ide TÉNYLEG felmegyünk, napközben, jegy előre foglalva"},{n:"Tudor City Bridge"},{n:"The Campbell", d:"elegáns, egykori irodából lett koktélbár a Grand Central Terminalban — délutáni ital a SUMMIT után", q:"The Campbell, New York"}]},
   {h:"Este — naplemente a Top of the Rockból", items:[{n:"Top of The Rock", d:"kilátóterasz — ide TÉNYLEG felmegyünk, kifejezetten napnyugtakor, jegy előre foglalva (kb. 18:45 körül van napnyugta szeptember közepén)"}]}
@@ -863,7 +861,7 @@ const days = [
 {id:"d8", num:8, date:"09.23, Szerda", title:"Greenwich Village, West Village, Chelsea & Intrepid", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["West Village","Chelsea","Midtown"],
  blocks:[
   {h:"Reggel — Greenwich / West Village", items:[{n:"Greenwich Village"},{n:"Washington Square Park"},{n:"New York-i Egyetem (NYU)", d:"a campus a Washington Square Park körül terül el, séta közben úgyis átmentek rajta", q:"New York University, New York"},{n:"West Village", q:"West Village, New York"},{n:"Carrie Bradshaw's Apartment", d:"66 Perry St", q:"66 Perry St, New York"},{n:"Friends Apartment Building", d:"90 Bedford St", q:"90 Bedford St, New York"}]},
-  {h:"Délután — Hudson River / Chelsea", items:[{n:"High Line Park"},{n:"Chelsea Market"},{n:"Google Store Chelsea", d:"✨ frissítve a bővült listából", q:"Google Store Chelsea, New York"},{n:"Little Island"},{n:"Old Pier 48"},{n:"Hudson River Park Trust"},{n:"Vessel", d:"csak kívülről/fotó"},{n:"Hudson Yards"},{n:"Edge NYC", d:"csak kívülről/fotó, felmenni nem tervezünk — a kilátózásra a Top of the Rock és a SUMMIT One Vanderbilt van betervezve"}]},
+  {h:"Délután — Hudson River / Chelsea", items:[{n:"High Line Park"},{n:"Chelsea Market"},{n:"Little Island"},{n:"Old Pier 48"},{n:"Hudson River Park Trust"},{n:"Vessel", d:"csak kívülről/fotó"},{n:"Hudson Yards"},{n:"Edge NYC", d:"csak kívülről/fotó, felmenni nem tervezünk — a kilátózásra a Top of the Rock és a SUMMIT One Vanderbilt van betervezve"}]},
   {h:"Késő délután — Intrepid Museum", items:[{n:"Intrepid Museum", d:"ide TÉNYLEG bemegyünk — Pier 86, számolj 1,5-2 órával a Lion King előtt, foglalj jegyet előre", q:"Intrepid Museum, New York"}]},
   {h:"Este ~19:00 — KÖTELEZŐ", items:[{n:"The Lion King", d:"Minskoff Theatre, 200 West 45th St — ellenőrizd az időt!", q:"Minskoff Theatre, New York"}]}
  ]},
@@ -888,10 +886,17 @@ const days = [
   {h:"Este — Astoria", items:[{n:"Astoria Park", d:"Queens"},{n:"Hunter's Point South Park", d:"látványos Manhattan-panoráma Long Island City-ből, kb. 15-20 perccel délebbre Astoriától", q:"Hunter's Point South Park, Long Island City, NY"},{n:"Taverna Kyclades", d:"✨ saját tipp (nincs a listádon) — híres görög étterem Astoriában, foglalás ajánlott", q:"Taverna Kyclades, Astoria, New York"}]},
   {h:"Éjszaka", items:[{n:"Westlight Rooftop", d:"✨ saját tipp (nincs a listádon) — a William Vale szálloda tetején Williamsburgben, ikonikus Manhattan-panoráma, ha még van energia visszamenni, foglalás ajánlott", q:"Westlight Rooftop Bar, Brooklyn"}]}
  ]},
-{id:"d12", num:12, date:"09.27, Vasárnap", title:"Utolsó nap / hazaút", color:"var(--day12)", special:"🧳 21:50 JFK indulás", zones:["Midtown","Szállás mellett (NJ)"],
+{id:"d12", num:12, date:"09.27, Vasárnap", title:"Utolsó nap / hazaút", color:"var(--day12)", special:"🧳 21:50 JFK indulás", zones:["Szállás mellett (NJ)"],
  blocks:[
   {h:"Reggel", items:[{n:"Kijelentkezés a szállásról", loc:false},{n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false},{n:"Reggeli a Six Corners Cafe-ban", d:"North Bergen-i kávézó, szó szerint a szállás városrészében, jó választás egy nyugodt utolsó reggelihez", q:"Six Corners Cafe, North Bergen, NJ"}]},
-  {h:"Délelőtt–délután", items:[{n:"Pótold, ami kimaradt a listából", loc:false},{n:"Utolsó séták, bevásárlás", loc:false}]},
+  {h:"Délelőtt–délután — Jersey City folyóparti séta (a szállás közelében, nem kell bemenni Manhattanbe)", items:[
+    {n:"Hudson River Waterfront Walkway", d:"folyóparti sétány Jersey City-ben, panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
+    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
+    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
+    {n:"Empty Sky — 9/11-emlékmű", d:"New Jersey állam hivatalos 9/11-emlékműve, közvetlen kilátással a Manhattan-panorámára", q:"Empty Sky Memorial, Jersey City, NJ"},
+    {n:"Statue Of Liberty Vista", d:"ingyenes kilátópont a Szabadság-szoborra Jersey City felől", q:"Statue of Liberty Vista, Jersey City, NJ"},
+    {n:"Hamilton Park", d:"hangulatos városi park Jersey City belvárosában, útban visszafelé", q:"Hamilton Park, Jersey City, NJ"}
+  ]},
   {h:"~17:30–18:00", items:[{n:"Csomagok felvétele", loc:false},{n:"Indulás JFK felé", q:"John F. Kennedy International Airport, New York"}]},
   {h:"Este", items:[{n:"Ma este már nincs külön program — 21:50-kor a levegőben lesztek, irány haza", loc:false}]}
  ]}
@@ -1275,7 +1280,7 @@ function updateSyncBadge(){
   if(!el) return;
   if(!syncEnabled){ el.style.display = 'none'; return; }
   el.style.display = 'inline-flex';
-  const labels = {connecting:'🔄 Szinkronizálás…', live:'🟢 Élő szinkron', error:'⚠️ Szinkron hiba'};
+  const labels = {connecting:'🔄 Szinkronizálás…', live:'🟢 Élő szinkron', error:'⚠️ Szinkron hiba', polling:'🟡 Szinkron (15 mp-enként)'};
   el.textContent = labels[syncStatus] || '';
 }
 function syncWriteCheck(key, val){
@@ -1328,30 +1333,52 @@ function applyRemoteState(remote){
     if(typeof renderPacking==='function') renderPacking();
   }
 }
+let liveES = null;
+let pollTimer = null;
+// Ha az élő (EventSource) kapcsolatot valami blokkolja a böngészőben (bővítmény,
+// tracking-védelem stb.) — a sima fetch ugyanakkor működik —, ez a periodikus
+// lekérdezés akkor is életben tartja a szinkront, csak nem azonnali, hanem 15mp-es
+// késéssel. Amint az élő kapcsolat mégis sikerül (auto-reconnect), leáll.
+function startPolling(){
+  if(pollTimer) return;
+  pollTimer = setInterval(()=>{
+    fetch(SYNC_PATH + ".json").then(r=>r.json()).then(applyRemoteState).catch(()=>{});
+  }, 15000);
+}
+function stopPolling(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+}
+function connectLive(){
+  if(liveES){ try{ liveES.close(); }catch(e){} }
+  const es = new EventSource(SYNC_PATH + ".json");
+  liveES = es;
+  function handleEvent(e){
+    try{
+      const msg = JSON.parse(e.data);
+      const path = msg.path, val = msg.data;
+      if(path === "/") applyRemoteState(val);
+      else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
+      else if(path === "/budget") applyRemoteState({budget: val});
+      else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
+      else if(path === "/packing") applyRemoteState({packing: val});
+      else if(path === "/checks" ) applyRemoteState({checks: val});
+    }catch(err){}
+  }
+  es.addEventListener('put', handleEvent);
+  es.addEventListener('patch', handleEvent);
+  es.onopen = ()=>{ syncStatus = 'live'; updateSyncBadge(); stopPolling(); };
+  es.onerror = ()=>{
+    syncStatus = 'polling'; updateSyncBadge();
+    startPolling();
+  };
+}
 function initSync(){
   if(!syncEnabled) return;
   syncStatus = 'connecting'; updateSyncBadge();
   fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
     applyRemoteState(data);
-    syncStatus = 'live'; updateSyncBadge();
-    const es = new EventSource(SYNC_PATH + ".json");
-    function handleEvent(e){
-      try{
-        const msg = JSON.parse(e.data);
-        const path = msg.path, val = msg.data;
-        if(path === "/") applyRemoteState(val);
-        else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
-        else if(path === "/budget") applyRemoteState({budget: val});
-        else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
-        else if(path === "/packing") applyRemoteState({packing: val});
-        else if(path === "/checks" ) applyRemoteState({checks: val});
-      }catch(err){}
-    }
-    es.addEventListener('put', handleEvent);
-    es.addEventListener('patch', handleEvent);
-    es.onerror = ()=>{ syncStatus = 'error'; updateSyncBadge(); };
-    es.onopen = ()=>{ syncStatus = 'live'; updateSyncBadge(); };
-  }).catch(()=>{ syncStatus = 'error'; updateSyncBadge(); });
+    connectLive();
+  }).catch(()=>{ syncStatus = 'error'; updateSyncBadge(); startPolling(); });
 }
 // Ha valaki net nélkül (pl. metrón) pipál valamit, az akkor is elmentődik localStorage-ba —
 // csak a Firebase-be küldés hiúsul meg csendben. Amint visszajön a net, PATCH-eljük vissza
@@ -1381,6 +1408,7 @@ function forceResync(){
   if(!syncEnabled) return;
   pushFullLocalSnapshot();
   fetch(SYNC_PATH + ".json").then(r=>r.json()).then(applyRemoteState).catch(()=>{});
+  connectLive();
 }
 
 /* ============================================================
@@ -1664,6 +1692,7 @@ function jumpToRestaurant(idx){
 function jumpToPacking(){ closeGlobalSearch(); goto('view-pack'); }
 function jumpToAnytime(){ closeGlobalSearch(); goto('view-days'); showDay(days[currentDayIndex] ? days[currentDayIndex].id : days[0].id); }
 function jumpToBudget(){ closeGlobalSearch(); goto('view-budget'); }
+function jumpToExtra(){ closeGlobalSearch(); goto('view-extra'); }
 function escHtml(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function renderGlobalSearch(){
   const q = document.getElementById('globalSearchInput').value.toLowerCase().trim();
@@ -1686,6 +1715,12 @@ function renderGlobalSearch(){
   }));
 
   const anytimeHits = anytimeOptions.filter(o=> (o.n+' '+(o.d||'')).toLowerCase().includes(q));
+
+  const extraHits = [];
+  extraSpots.forEach(cat=> cat.items.forEach(item=>{
+    const text = (item.n+' '+(item.d||'')+' '+cat.cat).toLowerCase();
+    if(text.includes(q)) extraHits.push({item, cat});
+  }));
 
   const MAXSHOW = 8;
   function section(title, items, renderRow){
@@ -1716,6 +1751,11 @@ function renderGlobalSearch(){
     <a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="#" onclick="event.preventDefault();jumpToAnytime()">
       <div class="ticket-main"><span><span class="tname">${escHtml(o.n)}</span>${o.d?`<span class="tdesc">${escHtml(o.d)}</span>`:''}</span></div>
       <span class="pinbtn" style="pointer-events:none;">✨</span>
+    </a>`);
+  html += section('🚆 Boston / DC / messzebbi extra', extraHits, ({item, cat})=>`
+    <a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="#" onclick="event.preventDefault();jumpToExtra()">
+      <div class="ticket-main"><span><span class="tname">${escHtml(item.n)}</span><span class="tdesc">${escHtml(cat.cat)}</span></span></div>
+      <span class="pinbtn" style="pointer-events:none;">🚆</span>
     </a>`);
 
   if(!html) html = '<div class="note">Nincs találat.</div>';
