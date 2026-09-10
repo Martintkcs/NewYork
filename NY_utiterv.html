@@ -428,7 +428,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <button class="shufflebtn" style="background:#999;color:#fff;" onclick="setAllMapDays(false)">🚫 Mind elrejt</button>
     </div>
     <div class="mapsvgwrap" id="mapsvgwrap"></div>
-    <div class="note" style="margin-top:8px;">A <b>Coney Island</b> (10. nap, Astoria párja) jóval délebbre van, az alap nagyításnál a térkép alsó szélén túl esik — nyomd meg a ⛶ gombot, hogy lásd. A <b>Hamptons</b> (10. nap alternatívája) Long Island keleti végén, ezen a térképkivágáson jóval túl van — a jobb szélen egy "Hamptons →" felirat jelzi az irányát, nem pontos helyként. A 12. nap (utolsó nap) reggel még a szálláson van, aztán amit kihagytatok azt pótolja, este pedig JFK-re megy 21:50-es indulással — ld. külön a Napi tervben.</div>
+    <div class="note" style="margin-top:8px;">A <b>Coney Island</b> (10. nap, Astoria párja) jóval délebbre van, az alap nagyításnál a térkép alsó szélén túl esik — nyomd meg a ⛶ gombot, hogy lásd. A <b>Hamptons</b> (10. nap alternatívája) Long Island keleti végén, ezen a térképkivágáson jóval túl van — a jobb szélen egy "Hamptons →" felirat jelzi az irányát, nem pontos helyként. A 12. nap (utolsó nap) reggel még a szálláson van, utána szándékosan szabadon/pihenősen hagyva (rövidebb nap, mert hazautaztok), este pedig JFK-re megy 21:50-es indulással — ld. külön a Napi tervben.</div>
   </div>
   <div class="sign">
     <h2><span class="em">📋</span>Jelmagyarázat — ki/be kapcsolható, mind a 12 nap</h2>
@@ -807,7 +807,16 @@ const days = [
     {n:"Transzfer a szállásra", d:"taxi/Uber ajánlott, ld. Közlekedés fül", loc:false},
     {n:"Bejelentkezés", d:"1815 43rd St, North Bergen, NJ 07047", q:"1815 43rd St, North Bergen, NJ"}
   ]},
-  {h:"Este — első kiruccanás Manhattanbe: Chelsea & Times Square", items:[
+  {h:"Kora este — séta a szállás közelében (↻ áthozva a 12. napról, hogy ne legyen annyi program az utolsó, rövidebb napon)", items:[
+    {n:"Washington Park", d:"Union City/West New York, szó szerint a szállás mellett", q:"40.7525466,-74.0415112"},
+    {n:"Hudson River Waterfront Walkway", d:"folyóparti sétány Jersey City-ben, panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
+    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
+    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
+    {n:"Empty Sky — 9/11-emlékmű", d:"New Jersey állam hivatalos 9/11-emlékműve, közvetlen kilátással a Manhattan-panorámára", q:"Empty Sky Memorial, Jersey City, NJ"},
+    {n:"Statue Of Liberty Vista", d:"ingyenes kilátópont a Szabadság-szoborra Jersey City felől", q:"Statue of Liberty Vista, Jersey City, NJ"},
+    {n:"Hamilton Park", d:"hangulatos városi park Jersey City belvárosában", q:"Hamilton Park, Jersey City, NJ"}
+  ]},
+  {h:"Este — kiruccanás Manhattanbe: Chelsea & Times Square", items:[
     {n:"Google Store Chelsea", d:"gyors bevásárlás/körülnézés, a Lincoln Tunnelen át könnyen elérhető a szállástól", q:"Google Store Chelsea, New York"},
     {n:"Times Square", d:"esti fényekben, csak a közvetlen környéke — a nagy 5th Ave-i séta a 3. napra van betervezve", q:"Times Square, New York"},
     {n:"The Broadway Theatre", d:"1681 Broadway — ↻ áthozva a 3. napról, hogy maradjatok a Times Square környékén ahelyett, hogy visszaindulnátok a szállás felé", q:"The Broadway Theatre, New York"}
@@ -885,15 +894,8 @@ const days = [
  ]},
 {id:"d12", num:12, date:"09.27, Vasárnap", title:"Utolsó nap / hazaút", color:"var(--day12)", special:"🧳 21:50 JFK indulás", zones:["Szállás mellett (NJ)"],
  blocks:[
-  {h:"Reggel", items:[{n:"Kijelentkezés a szállásról", loc:false},{n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false},{n:"Reggeli a Six Corners Cafe-ban", d:"North Bergen-i kávézó, szó szerint a szállás városrészében, jó választás egy nyugodt utolsó reggelihez", q:"Six Corners Cafe, North Bergen, NJ"},{n:"Washington Park", d:"↻ áthozva az 1. napról — Union City/West New York, szó szerint a szállás mellett, mielőtt elindultok a kb. 20 perces Jersey City folyóparti sétához", q:"40.7525466,-74.0415112"}]},
-  {h:"Délelőtt–délután — Jersey City folyóparti séta (a szállás közelében, nem kell bemenni Manhattanbe)", items:[
-    {n:"Hudson River Waterfront Walkway", d:"folyóparti sétány Jersey City-ben, panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
-    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
-    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
-    {n:"Empty Sky — 9/11-emlékmű", d:"New Jersey állam hivatalos 9/11-emlékműve, közvetlen kilátással a Manhattan-panorámára", q:"Empty Sky Memorial, Jersey City, NJ"},
-    {n:"Statue Of Liberty Vista", d:"ingyenes kilátópont a Szabadság-szoborra Jersey City felől", q:"Statue of Liberty Vista, Jersey City, NJ"},
-    {n:"Hamilton Park", d:"hangulatos városi park Jersey City belvárosában, útban visszafelé", q:"Hamilton Park, Jersey City, NJ"}
-  ]},
+  {h:"Reggel", items:[{n:"Kijelentkezés a szállásról", loc:false},{n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false},{n:"Reggeli a Six Corners Cafe-ban", d:"North Bergen-i kávézó, szó szerint a szállás városrészében, jó választás egy nyugodt utolsó reggelihez", q:"Six Corners Cafe, North Bergen, NJ"}]},
+  {h:"Délelőtt — szabad, pihenős idő indulás előtt", items:[{n:"Nincs betervezett program — a nap többi része szabadon hagyva, hogy legyen mozgástér a csomagolás/pihenés előtt az utolsó, rövidebb napon", loc:false}]},
   {h:"~17:30–18:00", items:[{n:"Csomagok felvétele", loc:false},{n:"Indulás JFK felé", q:"John F. Kennedy International Airport, New York"}]},
   {h:"Este", items:[{n:"Ma este már nincs külön program — 21:50-kor a levegőben lesztek, irány haza", loc:false}]}
  ]}
