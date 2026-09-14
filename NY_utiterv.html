@@ -1286,6 +1286,15 @@ const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
 let syncEnabled = !!SYNC_DB_URL;
 let syncStatus = 'off'; // off | connecting | live | error
+// Minden helyi módosítás (pipálás, csomaglista-tétel hozzáadása/törlése stb.) növeli
+// ezt a számlálót. Egy kimenő GET (poll / initSync / forceResync) az indításkor
+// rögzíti az akkori értéket; ha mire a válasz megjön, a számláló megváltozott —
+// vagyis időközben helyi módosítás történt —, a választ eldobjuk. Enélkül egy
+// már úton lévő, régebbi lekérdezés válasza felülírhatta a frissen hozzáadott
+// csomaglista-tételt a szerver akkor még régi állapotával (ez okozta, hogy új
+// tétel hozzáadása után kb. 15 mp-cel — a következő poll-ciklusnál — eltűnt).
+let localSyncVersion = 0;
+function bumpLocalSyncVersion(){ localSyncVersion++; }
 
 function updateSyncBadge(){
   const el = document.getElementById('syncBadge');
@@ -1296,20 +1305,24 @@ function updateSyncBadge(){
   el.textContent = labels[syncStatus] || '';
 }
 function syncWriteCheck(key, val){
+  bumpLocalSyncVersion();
   if(!syncEnabled) return;
   fetch(SYNC_PATH + "/checks/" + encodeURIComponent(key) + ".json", {
     method: "PUT", body: JSON.stringify(val)
   }).catch(()=>{});
 }
 function syncWriteBudget(){
+  bumpLocalSyncVersion();
   if(!syncEnabled) return;
   fetch(SYNC_PATH + "/budget.json", { method:"PUT", body: JSON.stringify(budgetEntries) }).catch(()=>{});
 }
 function syncWriteAnytimeList(){
+  bumpLocalSyncVersion();
   if(!syncEnabled) return;
   fetch(SYNC_PATH + "/anytimeList.json", { method:"PUT", body: JSON.stringify(anytimeOptions) }).catch(()=>{});
 }
 function syncWritePacking(){
+  bumpLocalSyncVersion();
   if(!syncEnabled) return;
   fetch(SYNC_PATH + "/packing.json", { method:"PUT", body: JSON.stringify(packing) }).catch(()=>{});
 }
@@ -1354,7 +1367,11 @@ let pollTimer = null;
 function startPolling(){
   if(pollTimer) return;
   pollTimer = setInterval(()=>{
-    fetch(SYNC_PATH + ".json").then(r=>r.json()).then(applyRemoteState).catch(()=>{});
+    const versionAtRequest = localSyncVersion;
+    fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
+      if(localSyncVersion !== versionAtRequest) return; // időközben helyi módosítás történt, a válasz elavult
+      applyRemoteState(data);
+    }).catch(()=>{});
   }, 15000);
 }
 function stopPolling(){
@@ -1387,8 +1404,9 @@ function connectLive(){
 function initSync(){
   if(!syncEnabled) return;
   syncStatus = 'connecting'; updateSyncBadge();
+  const versionAtRequest = localSyncVersion;
   fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
-    applyRemoteState(data);
+    if(localSyncVersion === versionAtRequest) applyRemoteState(data);
     connectLive();
   }).catch(()=>{ syncStatus = 'error'; updateSyncBadge(); startPolling(); });
 }
@@ -1419,7 +1437,10 @@ window.addEventListener('online', pushFullLocalSnapshot);
 function forceResync(){
   if(!syncEnabled) return;
   pushFullLocalSnapshot();
-  fetch(SYNC_PATH + ".json").then(r=>r.json()).then(applyRemoteState).catch(()=>{});
+  const versionAtRequest = localSyncVersion;
+  fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
+    if(localSyncVersion === versionAtRequest) applyRemoteState(data);
+  }).catch(()=>{});
   connectLive();
 }
 
