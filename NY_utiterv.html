@@ -1381,11 +1381,19 @@ function connectLive(){
   if(liveES){ try{ liveES.close(); }catch(e){} }
   const es = new EventSource(SYNC_PATH + ".json");
   liveES = es;
+  // Csatlakozáskor (és minden — akár a böngésző saját, csendes — újracsatlakozáskor)
+  // a szerver egy teljes "/" put eseményt küld az akkori állapottal. Ha ezalatt
+  // (kapcsolódás és az esemény megérkezése között) helyi módosítás történt — pl.
+  // épp kipipáltunk valamit —, ez a pillanatnyilag még régi teljes állapot
+  // felülírná azt. A versionAtLiveConnect az onopen-kor rögzíti a számlálót, így
+  // az azt követő, még ugyanahhoz a kapcsolódáshoz tartozó "/" esemény csak akkor
+  // kerül alkalmazásra, ha időközben nem történt helyi módosítás.
+  let versionAtLiveConnect = localSyncVersion;
   function handleEvent(e){
     try{
       const msg = JSON.parse(e.data);
       const path = msg.path, val = msg.data;
-      if(path === "/") applyRemoteState(val);
+      if(path === "/"){ if(localSyncVersion === versionAtLiveConnect) applyRemoteState(val); }
       else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
       else if(path === "/budget") applyRemoteState({budget: val});
       else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
@@ -1395,7 +1403,7 @@ function connectLive(){
   }
   es.addEventListener('put', handleEvent);
   es.addEventListener('patch', handleEvent);
-  es.onopen = ()=>{ syncStatus = 'live'; updateSyncBadge(); stopPolling(); };
+  es.onopen = ()=>{ versionAtLiveConnect = localSyncVersion; syncStatus = 'live'; updateSyncBadge(); stopPolling(); };
   es.onerror = ()=>{
     syncStatus = 'polling'; updateSyncBadge();
     startPolling();
