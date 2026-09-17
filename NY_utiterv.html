@@ -1696,6 +1696,61 @@ function chainAreaCtx(r, day){
   if(zones[0]==="Bárhol") return day.zones.find(z=>z!=="Bárhol") || null;
   return zones[0];
 }
+/* ============================================================
+   GOOGLE MAPS — natív appban nyitás (iOS)
+   A sima https://www.google.com/maps/... linkek iOS-en (böngészőből vagy egy
+   telepített PWA-ból nyitva) mindig Safariban nyílnak meg, nem ugranak át
+   automatikusan a Google Maps appba. A comgooglemaps:// egyedi URL-sémával
+   viszont — ha az app telepítve van — közvetlenül azt nyitja meg. Ha nincs
+   telepítve, a séma "elnyelődik" (nem történik semmi), ezért egy rövid
+   időzítővel figyeljük, hogy tényleg elnavigáltunk-e (az oldal háttérbe
+   került-e) — ha nem, visszaesünk a megszokott webes linkre új fülön.
+   Androidon/desktopon a sima https link már eleve jól működik (Android a
+   telepített Google Maps appban nyitja meg az ellenőrzött app-linkeket),
+   ott nem nyúlunk hozzá.
+   ============================================================ */
+function isIOSDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function toAppMapsUrl(webUrl){
+  const qIndex = webUrl.indexOf('?');
+  if(qIndex===-1) return null;
+  const path = webUrl.slice(0, qIndex);
+  const qs = webUrl.slice(qIndex+1);
+  const params = {};
+  qs.split('&').forEach(pair=>{
+    const eq = pair.indexOf('=');
+    if(eq===-1) return;
+    params[pair.slice(0,eq)] = pair.slice(eq+1); // marad percent-encoded, ahogy a webes URL-ben van
+  });
+  if(path.indexOf('/maps/search')!==-1){
+    return params.query ? ('comgooglemaps://?q='+params.query) : null;
+  }
+  if(path.indexOf('/maps/dir')!==-1){
+    let app = 'comgooglemaps://?directionsmode=walking';
+    if(params.destination) app += '&daddr='+params.destination;
+    if(params.origin) app += '&saddr='+params.origin;
+    if(params.waypoints) app += '&waypoints='+params.waypoints.replace(/%7C/gi,'|');
+    return app;
+  }
+  return null;
+}
+function openInMapsApp(e, webUrl){
+  if(!isIOSDevice()) return true; // Androidon/desktopon marad a megszokott link-viselkedés
+  const appUrl = toAppMapsUrl(webUrl);
+  if(!appUrl) return true;
+  if(e && e.preventDefault) e.preventDefault();
+  let navigatedAway = false;
+  const onHide = ()=>{ navigatedAway = true; };
+  document.addEventListener('visibilitychange', onHide, {once:true});
+  window.location.href = appUrl;
+  setTimeout(()=>{
+    document.removeEventListener('visibilitychange', onHide);
+    if(!navigatedAway) window.open(webUrl, '_blank', 'noopener');
+  }, 800);
+  return false;
+}
 function restaurantMapsUrl(r, areaCtx){
   // több helyszínes / országos láncos éttermeknél nem egy fix címre mutatunk, hanem az adott
   // környékre szűkített Google Maps keresésre — így mindig az odaillő (legközelebbi) fiókot
@@ -1713,8 +1768,8 @@ function openLocModal(idx){
   const r = restaurants[idx];
   if(!r) return;
   const allUrl = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(r.n+", New York");
-  const allBtn = `<a class="shufflebtn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#000;color:#fff;margin-bottom:10px;box-sizing:border-box;text-decoration:none;" href="${allUrl}" target="_blank" rel="noopener">🗺️ Mind a(z) ${r.locs.length} helyszín megnyitása Google Mapsben</a>`;
-  const rows = r.locs.map(z=>`<a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="${locModalUrl(r.n,z)}" target="_blank" rel="noopener">
+  const allBtn = `<a class="shufflebtn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#000;color:#fff;margin-bottom:10px;box-sizing:border-box;text-decoration:none;" href="${allUrl}" target="_blank" rel="noopener" onclick="return openInMapsApp(event,this.href)">🗺️ Mind a(z) ${r.locs.length} helyszín megnyitása Google Mapsben</a>`;
+  const rows = r.locs.map(z=>`<a class="ticket" style="text-decoration:none;color:inherit;display:flex;" href="${locModalUrl(r.n,z)}" target="_blank" rel="noopener" onclick="return openInMapsApp(event,this.href)">
     <div class="ticket-main"><span><span class="tname">${z}</span><span class="tdesc">Megnyitás Google Mapsben ebben a városrészben</span></span></div>
     <span class="pinbtn" style="pointer-events:none;">📍</span>
   </a>`).join('');
@@ -1859,7 +1914,7 @@ function pinLink(item){
   if(item.loc===false) return '';
   const url = isMealItem(item) ? directionsUrl(item) : singlePlaceUrl(item);
   const title = isMealItem(item) ? "Útvonal Google Mapsben (a jelenlegi helyzetedtől)" : "Megnyitás Google Mapsben";
-  return `<a class="pinbtn" href="${url}" target="_blank" rel="noopener" title="${title}" onclick="event.stopPropagation()">📍</a>`;
+  return `<a class="pinbtn" href="${url}" target="_blank" rel="noopener" title="${title}" onclick="event.stopPropagation();return openInMapsApp(event,this.href)">📍</a>`;
 }
 // Sok megállós útvonalnál (10 körül) a Google Maps útvonal-URL megbízhatatlanná válik:
 // előfordul, hogy egy-egy kevésbé egyértelmű helynevet (pl. egy park belső pontja) rosszul
@@ -1911,7 +1966,7 @@ days.forEach((day,i)=>{
   // (pl. "Macy's", "Ginny's Supper Club"), az korábban eltörte a JS stringet az onclique-ban,
   // és éppen ezért nem működött a gomb a legtöbb napnál. href-attribútumban ez nem probléma.
   html += mapsInfo.url
-    ? `<a class="routebtn" href="${mapsInfo.url}" target="_blank" rel="noopener">🧭 Napi útvonal megnyitása Google Mapsben</a>`
+    ? `<a class="routebtn" href="${mapsInfo.url}" target="_blank" rel="noopener" onclick="return openInMapsApp(event,this.href)">🧭 Napi útvonal megnyitása Google Mapsben</a>`
     : `<button class="routebtn" disabled>🧭 Nincs térképezhető helyszín ma</button>`;
   if(mapsInfo.url && mapsInfo.total > mapsInfo.used){
     html += `<div class="kbdhint" style="margin-top:-6px;margin-bottom:10px;">Ennél a napnál ${mapsInfo.total} helyszín van — a fenti gomb csak az első ${mapsInfo.used}-et fűzi össze egy útvonalba (sok megállónál a Google Maps néha rosszul geokódol egyet, és az egész útvonalat elviszi). A többi (és a legpontosabb navigáláshoz mindegyik) helyhez használd az egyes jegyek melletti 📍 gombot — az mindig egyetlen helyre keres rá, nem tud eltévedni.</div>`;
@@ -2016,7 +2071,7 @@ function renderDayFood(dayId){
       : (r.locs[0]==="Bárhol" ? ` <span style="font-weight:400;font-size:.72rem;color:var(--muted);">🌎 országos lánc — a 📍 itt keres: ${areaCtx||'a környéken'}</span>` : '');
     const pin = multi
       ? `<a class="pinbtn" href="#" onclick="event.preventDefault();event.stopPropagation();openLocModal(${idx})" title="Összes ismert helyszín">🔗</a>`
-      : `<a class="pinbtn" href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Megnyitás Google Mapsben">📍</a>`;
+      : `<a class="pinbtn" href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation();return openInMapsApp(event,this.href)" title="Megnyitás Google Mapsben">📍</a>`;
     return `<label class="rest-sync-${idx} ${checked?'checked':''}" style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 0;border-bottom:1px dashed #ddd;">
       <input type="checkbox" class="rest-sync-${idx}" ${checked?'checked':''} onchange="toggleRest(${idx}, this.checked)" style="width:20px;height:20px;accent-color:var(--taxi);flex:0 0 auto;">
       <span style="flex:1;min-width:0;">
@@ -2289,7 +2344,7 @@ function renderFood(){
       : (multi ? ` · ellenőrzött fiókok: ${zones.join(', ')}` : '');
     const pin = (multi && !areaCtx)
       ? `<a class="pinbtn" href="#" onclick="event.preventDefault();event.stopPropagation();openLocModal(${idx})" title="Összes ismert helyszín">🔗</a>`
-      : `<a class="pinbtn" href="${restaurantMapsUrl(r, areaCtx)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Megnyitás Google Mapsben">📍</a>`;
+      : `<a class="pinbtn" href="${restaurantMapsUrl(r, areaCtx)}" target="_blank" rel="noopener" onclick="event.stopPropagation();return openInMapsApp(event,this.href)" title="Megnyitás Google Mapsben">📍</a>`;
     return `<label class="rcard rest-sync-${idx} ${checked?'checked':''}">
       <input type="checkbox" class="rest-sync-${idx}" ${checked?'checked':''} onchange="toggleRest(${idx}, this.checked)">
       <span style="flex:1;min-width:0;"><span class="area" style="background:${areaColors[badgeArea]||'#000'}">${badgeArea}</span>${chainBadge}
