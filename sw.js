@@ -1,4 +1,4 @@
-const CACHE = 'ny-terv-v1';
+const CACHE = 'ny-terv-v2';
 const CORE_ASSETS = [
   './',
   './NY_utiterv.html',
@@ -28,7 +28,12 @@ self.addEventListener('fetch', e => {
   const isHtml = e.request.mode === 'navigate' || e.request.url.endsWith('.html');
   if (isHtml) {
     e.respondWith(
-      fetch(e.request)
+      // cache: 'no-store' — enélkül a fetch a böngésző saját HTTP-cache-éből
+      // (a GitHub Pages Cache-Control fejléce miatt akár percekig) szolgálhatta
+      // volna ki a kérést "hálózatiként", és így egy frissen kiadott javítás
+      // (pl. a szinkron-hiba fix) még bezárás/újranyitás után is a régi,
+      // gyorsítótárazott JS-t futtatta volna tovább.
+      fetch(e.request, { cache: 'no-store' })
         .then(res => {
           const resClone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, resClone));

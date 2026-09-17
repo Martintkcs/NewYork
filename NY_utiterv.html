@@ -1295,6 +1295,25 @@ let syncStatus = 'off'; // off | connecting | live | error
 // tétel hozzáadása után kb. 15 mp-cel — a következő poll-ciklusnál — eltűnt).
 let localSyncVersion = 0;
 function bumpLocalSyncVersion(){ localSyncVersion++; }
+// Nem elég csak azt figyelni, hogy egy lekérdezés KÖZBEN történt-e helyi módosítás:
+// ha a mi PUT írásunk (pl. gyenge mobilneten) még nincs kész a szerveren, amikor egy
+// már korábban ütemezett poll/GET válasza megérkezik, a válasz simán a még régi
+// (a mi frissítésünket nem tartalmazó) állapotot hozza vissza, és felülírja a
+// pipálást/hozzáadott tételt — a localSyncVersion önmagában ezt nem veszi észre,
+// hiszen közben nem történt ÚJABB módosítás. Ezért minden folyamatban lévő írást
+// számon tartunk, és egy lekérdezés eredményét csak akkor alkalmazzuk, ha épp nincs
+// még be nem fejeződött írásunk.
+let pendingSyncWrites = 0;
+function syncFetchWrite(url, opts){
+  pendingSyncWrites++;
+  return fetch(url, opts).catch(()=>{}).finally(()=>{ pendingSyncWrites--; });
+}
+// Egy lekérdezés eredménye csak akkor megbízható, ha (a) a lekérdezés indítása óta
+// nem történt új helyi módosítás, ÉS (b) épp nincs még befejezetlen írásunk (ami
+// esetleg korábban indult, de a szerver még nem dolgozta fel).
+function canApplyRemote(versionAtRequest){
+  return localSyncVersion === versionAtRequest && pendingSyncWrites === 0;
+}
 
 function updateSyncBadge(){
   const el = document.getElementById('syncBadge');
@@ -1307,24 +1326,24 @@ function updateSyncBadge(){
 function syncWriteCheck(key, val){
   bumpLocalSyncVersion();
   if(!syncEnabled) return;
-  fetch(SYNC_PATH + "/checks/" + encodeURIComponent(key) + ".json", {
+  syncFetchWrite(SYNC_PATH + "/checks/" + encodeURIComponent(key) + ".json", {
     method: "PUT", body: JSON.stringify(val)
-  }).catch(()=>{});
+  });
 }
 function syncWriteBudget(){
   bumpLocalSyncVersion();
   if(!syncEnabled) return;
-  fetch(SYNC_PATH + "/budget.json", { method:"PUT", body: JSON.stringify(budgetEntries) }).catch(()=>{});
+  syncFetchWrite(SYNC_PATH + "/budget.json", { method:"PUT", body: JSON.stringify(budgetEntries) });
 }
 function syncWriteAnytimeList(){
   bumpLocalSyncVersion();
   if(!syncEnabled) return;
-  fetch(SYNC_PATH + "/anytimeList.json", { method:"PUT", body: JSON.stringify(anytimeOptions) }).catch(()=>{});
+  syncFetchWrite(SYNC_PATH + "/anytimeList.json", { method:"PUT", body: JSON.stringify(anytimeOptions) });
 }
 function syncWritePacking(){
   bumpLocalSyncVersion();
   if(!syncEnabled) return;
-  fetch(SYNC_PATH + "/packing.json", { method:"PUT", body: JSON.stringify(packing) }).catch(()=>{});
+  syncFetchWrite(SYNC_PATH + "/packing.json", { method:"PUT", body: JSON.stringify(packing) });
 }
 function applyRemoteState(remote){
   if(!remote) return;
@@ -1369,7 +1388,7 @@ function startPolling(){
   pollTimer = setInterval(()=>{
     const versionAtRequest = localSyncVersion;
     fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
-      if(localSyncVersion !== versionAtRequest) return; // időközben helyi módosítás történt, a válasz elavult
+      if(!canApplyRemote(versionAtRequest)) return; // közbeni módosítás vagy még függőben lévő írás — a válasz nem megbízható
       applyRemoteState(data);
     }).catch(()=>{});
   }, 15000);
@@ -1393,7 +1412,7 @@ function connectLive(){
     try{
       const msg = JSON.parse(e.data);
       const path = msg.path, val = msg.data;
-      if(path === "/"){ if(localSyncVersion === versionAtLiveConnect) applyRemoteState(val); }
+      if(path === "/"){ if(canApplyRemote(versionAtLiveConnect)) applyRemoteState(val); }
       else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
       else if(path === "/budget") applyRemoteState({budget: val});
       else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
@@ -1414,7 +1433,7 @@ function initSync(){
   syncStatus = 'connecting'; updateSyncBadge();
   const versionAtRequest = localSyncVersion;
   fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
-    if(localSyncVersion === versionAtRequest) applyRemoteState(data);
+    if(canApplyRemote(versionAtRequest)) applyRemoteState(data);
     connectLive();
   }).catch(()=>{ syncStatus = 'error'; updateSyncBadge(); startPolling(); });
 }
@@ -1436,7 +1455,7 @@ function pushFullLocalSnapshot(){
   if(typeof packing!=='undefined') packing.forEach(cat=>(cat.items||[]).forEach(it=>{
     const v = localStorage.getItem('ny2026_pack-'+it.id); if(v!==null) checks['pack-'+it.id]=v;
   }));
-  if(Object.keys(checks).length) fetch(SYNC_PATH+"/checks.json", {method:"PATCH", body: JSON.stringify(checks)}).catch(()=>{});
+  if(Object.keys(checks).length) syncFetchWrite(SYNC_PATH+"/checks.json", {method:"PATCH", body: JSON.stringify(checks)});
   syncWriteBudget();
   syncWriteAnytimeList();
   syncWritePacking();
@@ -1447,7 +1466,7 @@ function forceResync(){
   pushFullLocalSnapshot();
   const versionAtRequest = localSyncVersion;
   fetch(SYNC_PATH + ".json").then(r=>r.json()).then(data=>{
-    if(localSyncVersion === versionAtRequest) applyRemoteState(data);
+    if(canApplyRemote(versionAtRequest)) applyRemoteState(data);
   }).catch(()=>{});
   connectLive();
 }
