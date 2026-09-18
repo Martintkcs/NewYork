@@ -1312,6 +1312,22 @@ let pendingSyncWrites = 0;
 // alkalmazta — ez nézett ki úgy, mintha "visszavenné" a pipát. Most a válasz
 // státuszát is ellenőrizzük, és sikertelen írást (hálózati hiba VAGY nem-ok
 // HTTP-státusz) még kétszer újrapróbálunk, mielőtt feladnánk.
+// Látható jelzés, ha egy írás VÉGLEGESEN (3 próbálkozás után is) sikertelen marad —
+// enélkül ez eddig teljesen csendben tűnt el, és úgy nézett ki, mintha a rendszer
+// "visszavenné" a pipát/tételt, holott valójában sosem sikerült elmenteni.
+function showSyncErrorToast(detail){
+  let el = document.getElementById('syncErrorToast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'syncErrorToast';
+    el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:70px;z-index:9999;background:#c0161a;color:#fff;padding:10px 14px;border-radius:10px;font-size:.78rem;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.3);';
+    document.body.appendChild(el);
+  }
+  el.textContent = '⚠️ Szinkron mentési hiba — ez nem mentődött el: '+detail;
+  el.style.display = 'block';
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(()=>{ el.style.display = 'none'; }, 8000);
+}
 async function syncFetchWrite(url, opts){
   pendingSyncWrites++;
   try{
@@ -1319,9 +1335,15 @@ async function syncFetchWrite(url, opts){
       try{
         const res = await fetch(url, opts);
         if(res.ok) return res;
-        throw new Error('HTTP '+res.status);
+        let bodyText = '';
+        try{ bodyText = await res.text(); }catch(e){}
+        throw new Error('HTTP '+res.status+(bodyText?(' — '+bodyText.slice(0,200)):''));
       }catch(err){
-        if(attempt===3){ console.error('Szinkron írás sikertelen 3 próbálkozás után:', url, err); return; }
+        if(attempt===3){
+          console.error('Szinkron írás sikertelen 3 próbálkozás után:', url, err);
+          showSyncErrorToast(err.message || String(err));
+          return;
+        }
         await new Promise(r=>setTimeout(r, 400*attempt));
       }
     }
