@@ -1304,9 +1304,30 @@ function bumpLocalSyncVersion(){ localSyncVersion++; }
 // számon tartunk, és egy lekérdezés eredményét csak akkor alkalmazzuk, ha épp nincs
 // még be nem fejeződött írásunk.
 let pendingSyncWrites = 0;
-function syncFetchWrite(url, opts){
+// Eddig a fetch(...).catch(()=>{}) NEM nézte meg a válasz HTTP-státuszát — egy
+// szerver által elutasított írás (pl. átmeneti hiba, rossz kulcs) is "sikeresnek"
+// tűnt a kódnak, mert csak a hálózati szintű hibát fogta volna el a catch. Ha egy
+// pipálás/tétel emiatt ténylegesen sosem jutott el a szerverre, a következő
+// szinkron jogosan a szerveren lévő (a helyi módosítást nem tartalmazó) állapotot
+// alkalmazta — ez nézett ki úgy, mintha "visszavenné" a pipát. Most a válasz
+// státuszát is ellenőrizzük, és sikertelen írást (hálózati hiba VAGY nem-ok
+// HTTP-státusz) még kétszer újrapróbálunk, mielőtt feladnánk.
+async function syncFetchWrite(url, opts){
   pendingSyncWrites++;
-  return fetch(url, opts).catch(()=>{}).finally(()=>{ pendingSyncWrites--; });
+  try{
+    for(let attempt=1; attempt<=3; attempt++){
+      try{
+        const res = await fetch(url, opts);
+        if(res.ok) return res;
+        throw new Error('HTTP '+res.status);
+      }catch(err){
+        if(attempt===3){ console.error('Szinkron írás sikertelen 3 próbálkozás után:', url, err); return; }
+        await new Promise(r=>setTimeout(r, 400*attempt));
+      }
+    }
+  } finally {
+    pendingSyncWrites--;
+  }
 }
 // Egy lekérdezés eredménye csak akkor megbízható, ha (a) a lekérdezés indítása óta
 // nem történt új helyi módosítás, ÉS (b) épp nincs még befejezetlen írásunk (ami
@@ -1412,8 +1433,14 @@ function connectLive(){
     try{
       const msg = JSON.parse(e.data);
       const path = msg.path, val = msg.data;
-      if(path === "/"){ if(canApplyRemote(versionAtLiveConnect)) applyRemoteState(val); }
-      else if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
+      if(path === "/"){ if(canApplyRemote(versionAtLiveConnect)) applyRemoteState(val); return; }
+      // Amíg van saját, még be nem fejeződött írásunk, a beérkező push-eseményeket
+      // kihagyjuk — ugyanaz az óvatosság, mint a poll/init lekérdezéseknél: egy
+      // ilyen esemény épp egy másik (korábbi, még folyamatban lévő) helyi
+      // módosításunkkal ütközhetne. A következő push (vagy a soron kővetkező
+      // poll) úgyis behozza a végleges állapotot, amint a saját írásunk lezárult.
+      if(pendingSyncWrites > 0) return;
+      if(path.indexOf("/checks/")===0) applyRemoteState({checks:{[decodeURIComponent(path.slice(8))]: val}});
       else if(path === "/budget") applyRemoteState({budget: val});
       else if(path === "/anytimeList") applyRemoteState({anytimeList: val});
       else if(path === "/packing") applyRemoteState({packing: val});
