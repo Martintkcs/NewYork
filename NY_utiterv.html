@@ -656,9 +656,15 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
 <!-- ============ FULL CHECKLIST ============ -->
 <div class="view" id="view-checklist">
   <div class="sign">
-    <h2><span class="em">🎫</span>Minden látványosság egy listában</h2>
-    <p style="color:var(--muted);font-size:.84rem;margin-top:0;">Mind a 115 hely a "New york helyszín" listádból, ugyanazok a pipák mint a napi terveknél — ha itt kipipálsz valamit, a napi nézetben is pipálva lesz, és fordítva. Az éttermek külön listában, az Étterem-felfedezőben vannak (ott is pipálhatók, szintén szinkronban a napi étterem-ajánlóval).</p>
-    <input class="searchbar" id="checklistsearch" placeholder="Keresés a listában… (pl. central park, múzeum, híd)">
+    <h2><span class="em">🎫</span>Teljes lista — minden program és étterem</h2>
+    <p style="color:var(--muted);font-size:.84rem;margin-top:0;">Minden látnivaló és minden étterem egy helyen, ugyanazokkal a pipákkal, mint a napi terveknél és az Étterem-felfedezőben — ha itt kipipálsz valamit, ott is pipálva lesz, és fordítva. A pipák a másik telefonra is átszinkronizálódnak.</p>
+    <input class="searchbar" id="checklistsearch" placeholder="Keresés a listában… (pl. central park, múzeum, pizza)">
+    <div id="checklistFilterChips" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px;">
+      <button class="chip on" data-mode="all" onclick="setChecklistMode('all')">Mind</button>
+      <button class="chip" data-mode="sights" onclick="setChecklistMode('sights')">🎫 Programok</button>
+      <button class="chip" data-mode="food" onclick="setChecklistMode('food')">🍔 Éttermek</button>
+      <button class="chip" data-mode="todo" onclick="setChecklistMode('todo')">⬜ Csak a hátralévők</button>
+    </div>
     <div class="rcount" id="checklistcount"></div>
     <div id="fulllist"></div>
     <button class="resetbtn" style="margin-top:10px;color:#900;border-color:#900;" onclick="resetAll()">↺ Összes jegy visszaváltása</button>
@@ -687,7 +693,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <span class="bottomTabIcon">🧾</span><span>Adó</span><span class="bottomTabDot"></span>
     </button>
     <button class="bottomTabBtn" id="tab-checklist" onclick="goto('view-checklist')">
-      <span class="bottomTabIcon">🎫</span><span>Jegyfüzet</span><span class="bottomTabDot"></span>
+      <span class="bottomTabIcon">🎫</span><span>Lista</span><span class="bottomTabDot"></span>
     </button>
     <button class="bottomTabBtn" id="tab-more" onclick="openMoreSheet()">
       <span class="bottomTabIcon">☰</span><span>Több</span><span class="bottomTabDot"></span>
@@ -1286,7 +1292,7 @@ renderTaxes();
 // (🩺 gomb) ezt mutatja, hogy egyértelműen lássuk: a telefonon tényleg a legfrissebb
 // kód fut-e, vagy még egy régebbi, gyorsítótárazott verzió (pl. ha a "visszaálló pipa"
 // hiba a korábbi javítások ELLENÉRE is jelentkezik).
-const BUILD_VERSION = "2026-09-19-syncdiag1";
+const BUILD_VERSION = "2026-09-19-fulllist-syncfix";
 const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
@@ -1378,6 +1384,12 @@ function syncWriteCheck(key, val){
   syncFetchWrite(SYNC_PATH + "/checks/" + encodeURIComponent(key) + ".json", {
     method: "PUT", body: JSON.stringify(val)
   });
+}
+// Sok pipa egyszerre (pl. teljes reset) — egyetlen PATCH kéréssel, nem kulcsonként.
+function syncWriteChecksBulk(map){
+  bumpLocalSyncVersion();
+  if(!syncEnabled || !map || !Object.keys(map).length) return;
+  syncFetchWrite(SYNC_PATH + "/checks.json", { method:"PATCH", body: JSON.stringify(map) });
 }
 function syncWriteBudget(){
   bumpLocalSyncVersion();
@@ -1637,7 +1649,7 @@ const views = [
   {id:"view-days", label:"Napi terv", icon:"📅"},
   {id:"view-map", label:"Térkép", icon:"🗺️"},
   {id:"view-food", label:"Étterem-felfedező", icon:"🍔"},
-  {id:"view-checklist", label:"Teljes jegyfüzet", icon:"🎫"},
+  {id:"view-checklist", label:"Teljes lista (programok + éttermek)", icon:"🎫"},
   {id:"view-tips", label:"Közlekedés & tippek", icon:"🚇"},
   {id:"view-pack", label:"Csomaglista", icon:"🧳"},
   {id:"view-budget", label:"Költség", icon:"💰"},
@@ -2211,7 +2223,7 @@ const fulllist = document.getElementById('fulllist');
     day.blocks.forEach(block=>block.items.forEach(item=>{
       const cid = 'chk-'+day.id+'-'+item.n.replace(/[^a-zA-Z0-9]/g,'').slice(0,40);
       const searchTxt = (item.n+' '+(item.d||'')+' '+day.title).toLowerCase().replace(/"/g,'');
-      html += `<div class="ticket" id="mwrap-${cid}" data-search="${searchTxt}">
+      html += `<div class="ticket" id="mwrap-${cid}" data-kind="sight" data-search="${searchTxt}">
         <label class="ticket-main">
           <input type="checkbox" class="mirror" data-target="${cid}" data-day="${day.id}">
           <span><span class="tname">${item.n}</span>${item.d?`<span class="tdesc">${item.d}</span>`:''}<span class="tday" style="background:${day.color}">🗓️ ${day.num}. nap · ${day.title}</span></span>
@@ -2222,25 +2234,72 @@ const fulllist = document.getElementById('fulllist');
       </div>`;
     }));
   });
+  // Éttermek ugyanebben a listában — szándékosan a food-explorer pipa-mechanizmusát
+  // használják (rest-sync-<idx> osztály + toggleRest), így a pipálás itt, az
+  // Étterem-felfedezőben és a napi étterem-ajánlóban egyszerre frissül, és a
+  // szerverre is kimegy — nem kell külön tükrözés.
+  restaurants.forEach((r, idx)=>{
+    const zones = restZones(r);
+    const badgeArea = zones[0];
+    const checked = restChecked(idx);
+    const searchTxt = (r.n+' '+r.t+' '+zones.join(' ')+' étterem').toLowerCase().replace(/"/g,'');
+    const multi = zones.length > 1;
+    const pin = (multi)
+      ? `<a class="pinbtn" href="#" onclick="event.preventDefault();event.stopPropagation();openLocModal(${idx})" title="Összes ismert helyszín">🔗</a>`
+      : `<a class="pinbtn" href="${restaurantMapsUrl(r, null)}" target="_blank" rel="noopener" onclick="event.stopPropagation();return openInMapsApp(event,this.href)" title="Megnyitás Google Mapsben">📍</a>`;
+    html += `<div class="ticket rest-sync-${idx} ${checked?'checked':''}" data-kind="food" data-ridx="${idx}" data-search="${searchTxt}">
+      <label class="ticket-main">
+        <input type="checkbox" class="rest-sync-${idx}" ${checked?'checked':''} onchange="toggleRest(${idx}, this.checked)">
+        <span><span class="tname">${r.n}</span><span class="tdesc">${r.t} · ${r.p}</span><span class="tday" style="background:${areaColors[badgeArea]||'#000'}">🍔 ${multi?(zones.length+' helyszín'):badgeArea}</span></span>
+      </label>
+      ${pin}
+      <span class="stamp">LÁTVA ✓</span>
+    </div>`;
+  });
   fulllist.innerHTML = html;
+}
+// szándékosan var: a refreshVisuals() (ami ennél korábban is lefuthat) hivatkozik rá,
+// és a var — a let-tel ellentétben — nem dob TDZ hibát korai eléréskor
+var checklistMode = 'all';
+function setChecklistMode(mode){
+  checklistMode = mode;
+  document.querySelectorAll('#checklistFilterChips .chip').forEach(c=>{
+    c.classList.toggle('on', c.dataset.mode === mode);
+  });
+  filterChecklist();
+}
+function checklistRowChecked(t){
+  const mirror = t.querySelector('input[type=checkbox]');
+  return !!(mirror && mirror.checked);
 }
 function filterChecklist(){
   const q = document.getElementById('checklistsearch').value.toLowerCase().trim();
-  let shown = 0, total = 0;
+  let shownSights = 0, shownFood = 0, totalSights = 0, totalFood = 0;
   document.querySelectorAll('#fulllist .ticket').forEach(t=>{
-    total++;
-    const match = !q || (t.dataset.search||'').includes(q);
+    const isFood = t.dataset.kind === 'food';
+    if(isFood) totalFood++; else totalSights++;
+    let match = !q || (t.dataset.search||'').includes(q);
+    if(match && checklistMode === 'sights' && isFood) match = false;
+    if(match && checklistMode === 'food' && !isFood) match = false;
+    if(match && checklistMode === 'todo' && checklistRowChecked(t)) match = false;
     t.style.display = match ? '' : 'none';
-    if(match) shown++;
+    if(match){ if(isFood) shownFood++; else shownSights++; }
   });
-  document.getElementById('checklistcount').textContent = q ? (shown+' / '+total+' találat') : (total+' hely összesen');
+  document.getElementById('checklistcount').textContent =
+    (shownSights+shownFood)+' találat  ·  '+shownSights+' program + '+shownFood+' étterem'
+    + '  (összesen '+totalSights+' program, '+totalFood+' étterem)';
 }
 document.getElementById('checklistsearch').addEventListener('input', filterChecklist);
 filterChecklist();
 document.querySelectorAll('.mirror').forEach(m=>{
   m.addEventListener('change', ()=>{
-    localStorage.setItem('ny2026_'+m.dataset.target, m.checked?'1':'0');
-    const el = document.getElementById(m.dataset.target);
+    const cid = m.dataset.target;
+    localStorage.setItem('ny2026_'+cid, m.checked?'1':'0');
+    // EZ HIÁNYZOTT: a teljes listában tett pipálás eddig CSAK helyben mentődött,
+    // sosem ment ki a szerverre — így a következő szinkron (ami jogosan a szerveren
+    // lévő régi értéket hozta vissza) egyszerűen visszavette a pipát.
+    syncWriteCheck(cid, m.checked?'1':'0');
+    const el = document.getElementById(cid);
     if(el) el.checked = m.checked;
     refreshVisuals(); checkDayComplete(m.dataset.day);
   });
@@ -2349,13 +2408,27 @@ function refreshVisuals(){
   const bottomFill = document.getElementById('bottomProgressFill');
   if(bottomFill) bottomFill.style.width = (total?done/total*100:0)+'%';
   updateTrainMarker();
+  // A teljes listában az éttermek is szerepelnek (rest-sync-<idx> sorokként) — ezeket
+  // is hozzáigazítjuk a tárolt állapothoz, hogy egy távoli szinkron után se maradjanak
+  // elavultak. (A napi/felfedező nézet sorait a toggleRest, ill. a renderFood kezeli.)
+  document.querySelectorAll('#fulllist [data-kind="food"]').forEach(row=>{
+    const on = localStorage.getItem('ny2026_rchk-'+row.dataset.ridx)==='1';
+    row.classList.toggle('checked', on);
+    const cb = row.querySelector('input[type=checkbox]');
+    if(cb) cb.checked = on;
+  });
+  if(document.getElementById('checklistsearch') && typeof filterChecklist==='function') filterChecklist();
 }
 function resetAll(){
   if(!confirm('Biztosan törlöd az összes pipát (látnivalók + éttermek + csomaglista)?')) return;
-  allCheckIds.forEach(cid=> localStorage.removeItem('ny2026_'+cid));
-  packing.forEach(cat=> cat.items.forEach(it=> localStorage.removeItem('ny2026_pack-'+it.id)));
-  restaurants.forEach((r,i)=> localStorage.removeItem('ny2026_rchk-'+i));
-  anytimeOptions.forEach(opt=> localStorage.removeItem(atCheckedKey(opt.id)));
+  // A törlést a szerverre is ki kell küldeni — enélkül csak helyben törlődtek a pipák,
+  // és a következő szinkron a szerveren maradt régi pipákat egyszerűen visszahozta.
+  const cleared = {};
+  allCheckIds.forEach(cid=>{ localStorage.removeItem('ny2026_'+cid); cleared[cid]='0'; });
+  packing.forEach(cat=> cat.items.forEach(it=>{ localStorage.removeItem('ny2026_pack-'+it.id); cleared['pack-'+it.id]='0'; }));
+  restaurants.forEach((r,i)=>{ localStorage.removeItem('ny2026_rchk-'+i); cleared['rchk-'+i]='0'; });
+  anytimeOptions.forEach(opt=>{ localStorage.removeItem(atCheckedKey(opt.id)); cleared['anytime-'+opt.id]='0'; });
+  syncWriteChecksBulk(cleared);
   document.querySelectorAll('[data-fired]').forEach(el=>el.dataset.fired="");
   refreshVisuals();
   renderPacking();
@@ -2389,6 +2462,7 @@ function toggleRest(idx, checked){
     else el.classList.toggle('checked', checked);
   });
   updateRestCount();
+  if(document.getElementById('checklistsearch') && typeof filterChecklist==='function') filterChecklist();
 }
 function updateRestCount(){
   let done=0; restaurants.forEach((r,i)=>{ if(restChecked(i)) done++; });
