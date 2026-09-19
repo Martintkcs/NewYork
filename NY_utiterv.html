@@ -353,6 +353,7 @@ body.dark .rcard.checked,body.dark .ticket.checked{background:#1c1a14;}
       <div class="brandsub">Takács Martin · 2026.09.16–27. · 12 megálló, egy körút</div>
     </div>
     <span id="syncBadge" onclick="forceResync()" title="Kattints az újraszinkronizáláshoz" style="display:none;cursor:pointer;margin-left:auto;font-size:.68rem;color:#bbb;align-items:center;padding:0 8px;"></span>
+    <button class="darktoggle" onclick="runSyncDiagnostics()" title="Szinkron-diagnosztika">🩺</button>
     <button class="darktoggle" onclick="openGlobalSearch()" title="Keresés mindenhol">🔍</button>
     <button class="darktoggle" id="darkToggleBtn" onclick="toggleDarkMode()" title="Sötét/világos mód">🌙</button>
   </div>
@@ -1281,6 +1282,11 @@ renderTaxes();
    → URL, kb. "https://PROJEKTNEV-default-rtdb.firebaseio.com" formában).
    Amíg üres, a szinkron ki van kapcsolva, az app localStorage-only marad.
    ============================================================ */
+// A build-jelzőt minden érdemi kódmódosításnál kézzel bumpoljuk — a diagnosztika
+// (🩺 gomb) ezt mutatja, hogy egyértelműen lássuk: a telefonon tényleg a legfrissebb
+// kód fut-e, vagy még egy régebbi, gyorsítótárazott verzió (pl. ha a "visszaálló pipa"
+// hiba a korábbi javítások ELLENÉRE is jelentkezik).
+const BUILD_VERSION = "2026-09-19-syncdiag1";
 const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
@@ -1518,6 +1524,40 @@ function forceResync(){
     if(canApplyRemote(versionAtRequest)) applyRemoteState(data);
   }).catch(()=>{});
   connectLive();
+}
+// Kézi diagnosztika (🩺 gomb): megmutatja, hogy (a) tényleg a legfrissebb kód fut-e
+// ezen a telefonon (BUILD_VERSION), (b) mi az aktuális szinkron-állapot, és (c) van-e
+// ELTÉRÉS a telefonon most látott (helyi) és a szerveren TÉNYLEGESEN tárolt pipálás
+// között — ez egyértelműen megmutatja, hogy a "visszaálló pipa" jelenség a szerveren
+// lévő valós adat (pl. egy másik eszköz felülírta), vagy csak a kijelzés hibája.
+async function runSyncDiagnostics(){
+  if(!syncEnabled){ alert('Build: '+BUILD_VERSION+'\nA szinkron nincs bekapcsolva.'); return; }
+  try{
+    const res = await fetch(SYNC_PATH + "/checks.json");
+    const remoteChecks = await res.json();
+    const diffs = [];
+    if(typeof allCheckIds!=='undefined') allCheckIds.forEach(cid=>{
+      const local = localStorage.getItem('ny2026_'+cid)==='1' ? '1' : '0';
+      const remoteRaw = remoteChecks ? remoteChecks[cid] : undefined;
+      const remote = (remoteRaw==='1'||remoteRaw===1) ? '1' : '0';
+      if(local!==remote) diffs.push(cid+' — telefonon: '+local+', szerveren: '+remote);
+    });
+    if(typeof packing!=='undefined') packing.forEach(cat=>(cat.items||[]).forEach(it=>{
+      const cid = 'pack-'+it.id;
+      const local = localStorage.getItem('ny2026_'+cid)==='1' ? '1' : '0';
+      const remoteRaw = remoteChecks ? remoteChecks[cid] : undefined;
+      const remote = (remoteRaw==='1'||remoteRaw===1) ? '1' : '0';
+      if(local!==remote) diffs.push(cid+' ('+it.text+') — telefonon: '+local+', szerveren: '+remote);
+    }));
+    const msg = 'Build: '+BUILD_VERSION
+      + '\nSzinkron állapot: '+syncStatus
+      + '\nFüggő (még nem lezárt) írás: '+pendingSyncWrites
+      + '\n\nEltérés a telefon és a szerver között: '+diffs.length
+      + (diffs.length ? ('\n\n'+diffs.slice(0,15).join('\n')) : '\n\nNincs eltérés — a telefonon látott pipálás pontosan egyezik azzal, ami a szerveren van.');
+    alert(msg);
+  }catch(err){
+    alert('Build: '+BUILD_VERSION+'\nA diagnosztikai lekérdezés sikertelen: '+(err && err.message ? err.message : err));
+  }
 }
 
 /* ============================================================
