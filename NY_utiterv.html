@@ -981,23 +981,29 @@ const days = [
     {n:"Century 21 NYC", cidDay:"d9"}
   ]},
  ]},
-{id:"d7", num:7, date:"09.22, Kedd", title:"Downtown: Financial District & Szabadság-szobor", color:"var(--day7)", special:"⛴️ Foglalt komjegy kell", zones:["Financial District"],
- blocks:[
-  {h:"Délelőtt — Battery Park City & The Battery", items:[
-    {n:"Rockefeller Park", d:"Battery Park City"},
-    {n:"The Battery"},
-    {n:"Whitehall Terminal", d:"ingyenes Staten Island Ferry"}
-  ]},
-  {h:"Délután — komp: Szabadság-szobor & Ellis Island", items:[
-    {n:"Szabadság-szobor", d:"komp Battery Parkból — ELŐRE foglalt jegy!", q:"Statue of Liberty, New York, NY, USA"},
-    {n:"Ellis Island"}
-  ]},
- ]},
-{id:"d8", num:8, date:"09.23, Szerda", title:"Tribeca & SoHo → Midtown (este Lion King)", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["SoHo/Tribeca","Midtown"],
+{id:"d7", num:7, date:"09.22, Kedd", title:"SoHo & Chinatown → Staten Island Ferry → DUMBO rooftop", color:"var(--day7)", special:null, zones:["SoHo/Tribeca","Financial District","Dumbo"],
  blocks:[
   {h:"Délelőtt — Tribeca & SoHo", items:[
     {n:"155 Franklin St", d:"Tribeca", cidDay:"d9"},
     {n:"SoHo séta", q:"SoHo, New York", cidDay:"d9"}
+  ]},
+  {h:"Kora délután — Chinatown", items:[
+    {n:"Chinatown séta", q:"Chinatown, New York", cidDay:"d9"}
+  ]},
+  {h:"Délután — Staten Island Ferry (ingyenes, Whitehall Terminal)", items:[
+    {n:"Whitehall Terminal", d:"ingyenes Staten Island Ferry"}
+  ]},
+  {h:"Este — DUMBO, koktél kilátással", items:[
+    {n:"Harriet's Rooftop", d:"koktélbár kilátással, 1 Hotel Brooklyn Bridge tetején", cidDay:"d6"}
+  ]},
+ ]},
+{id:"d8", num:8, date:"09.23, Szerda", title:"Upper West Side, Central Park & Midtown — este Lion King", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["Upper West Side","Midtown"],
+ blocks:[
+  {h:"Délelőtt — Upper West Side", items:[
+    {n:"Apple Upper West Side", d:"✨ frissítve a bővült listából", q:"Apple Upper West Side, New York", cidDay:"d4"}
+  ]},
+  {h:"Délelőtt — Central Park déli vége", items:[
+    {n:"Gapstow Bridge", cidDay:"d4"}
   ]},
   {h:"Délután — Midtown West, Hudson-part", items:[
     {n:"Intrepid Museum", d:"ide TÉNYLEG bemegyünk — Pier 86, számolj 1,5-2 órával a Lion King előtt, foglalj jegyet előre", q:"Intrepid Museum, New York"}
@@ -1009,43 +1015,41 @@ const days = [
     {n:"The Lion King", d:"Minskoff Theatre, 200 West 45th St — ellenőrizd az időt!", q:"Minskoff Theatre, New York"}
   ]},
  ]},
-{id:"d9", num:9, date:"09.24, Csütörtök", title:"Chinatown & Seaport → Central Park és Upper West Side", color:"var(--day9)", special:null, zones:["SoHo/Tribeca","Upper West Side"],
+{id:"d9", num:9, date:"09.24, Csütörtök", title:"Financial District, komp: Szabadság-szobor & Ellis Island, Seaport", color:"var(--day9)", special:"⛴️ Foglalt komjegy kell", zones:["Financial District"],
  blocks:[
-  {h:"Délelőtt — Chinatown & Lower East Side", items:[
-    {n:"Chinatown séta", q:"Chinatown, New York"},
-    {n:"Pier 35", d:"Lower East Side folyóparti park"}
+  {h:"Délelőtt — Battery Park City & The Battery", items:[
+    {n:"Rockefeller Park", d:"Battery Park City", cidDay:"d7"},
+    {n:"The Battery", cidDay:"d7"}
   ]},
-  {h:"Kora délután — South Street Seaport", items:[
+  {h:"Délután — komp: Szabadság-szobor & Ellis Island", items:[
+    {n:"Szabadság-szobor", d:"komp Battery Parkból — ELŐRE foglalt jegy!", q:"Statue of Liberty, New York, NY, USA", cidDay:"d7"},
+    {n:"Ellis Island", cidDay:"d7"}
+  ]},
+  {h:"Késő délután — South Street Seaport", items:[
     {n:"Pier 16", d:"South Street Seaport"}
   ]},
-  {h:"Délután — Central Park déli vége", items:[
-    {n:"Gapstow Bridge", cidDay:"d4"}
-  ]},
-  {h:"Késő délután — Upper West Side", items:[
-    {n:"Apple Upper West Side", d:"✨ frissítve a bővült listából", q:"Apple Upper West Side, New York", cidDay:"d4"}
-  ]},
-  {h:"Naplemente — Central Park", items:[
-    {n:"Esti séta a Central Parkban naplementekor", d:"✨ saját tipp — a Bow Bridge és a Bethesda Terrace naplementekor különösen szép", q:"Bow Bridge, Central Park, New York", cidDay:"d4"}
+  {h:"Este — Lower East Side folyópart", items:[
+    {n:"Pier 35", d:"Lower East Side folyóparti park"}
   ]},
  ]},
-{id:"d10", num:10, date:"09.25, Péntek", title:"Jersey City folyópart (+ este Upper East Side)", color:"var(--day10)", special:null, zones:["Szállás mellett (NJ)","Upper East Side"],
+{id:"d10", num:10, date:"09.25, Péntek", title:"Jersey City folyópart → naplemente a Central Parkban & Upper East Side", color:"var(--day10)", special:null, zones:["Szállás mellett (NJ)","Upper East Side"],
  blocks:[
   {h:"Délelőtt — Jersey City folyópart, Manhattan-panorámával", items:[
     {n:"Hudson River Waterfront Walkway", d:"folyóparti sétány Jersey City-ben, panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
     {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"},
     {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"}
   ]},
+  {h:"Naplemente — Central Park", items:[
+    {n:"Esti séta a Central Parkban naplementekor", d:"✨ saját tipp — a Bow Bridge és a Bethesda Terrace naplementekor különösen szép", q:"Bow Bridge, Central Park, New York", cidDay:"d4"}
+  ]},
   {h:"Éjszaka — koktél az Upper East Side-on", items:[
     {n:"Bemelmans Bar", d:"✨ saját tipp (nincs a listádon) — klasszikus zongorabár a Carlyle Hotelben, UES — délutáni koktélnak is jó, nem csak esti programnak", q:"Bemelmans Bar, New York", cidDay:"d5"}
   ]},
  ]},
-{id:"d11", num:11, date:"09.26, Szombat", title:"Coney Island, DUMBO, Williamsburg & Astoria", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg","Astoria","Dumbo"],
+{id:"d11", num:11, date:"09.26, Szombat", title:"Coney Island, Williamsburg & Astoria", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg","Astoria"],
  blocks:[
   {h:"Kora reggel — Coney Island", items:[
     {n:"Coney Island", d:"tengerpart, móló, vidámpark — korán érdemes, hogy még beleférjen Astoria és Williamsburg is aznap", q:"Coney Island, New York"}
-  ]},
-  {h:"Délelőtt — DUMBO, útban vissza északra", items:[
-    {n:"Harriet's Rooftop", d:"koktélbár kilátással, 1 Hotel Brooklyn Bridge tetején", cidDay:"d6"}
   ]},
   {h:"Délelőtt — Williamsburg", items:[
     {n:"Urban Jungle", d:"használt ruha bolt"},
@@ -1449,7 +1453,7 @@ renderTaxes();
 // (🩺 gomb) ezt mutatja, hogy egyértelműen lássuk: a telefonon tényleg a legfrissebb
 // kód fut-e, vagy még egy régebbi, gyorsítótárazott verzió (pl. ha a "visszaálló pipa"
 // hiba a korábbi javítások ELLENÉRE is jelentkezik).
-const BUILD_VERSION = "2026-09-22-nofood";
+const BUILD_VERSION = "2026-09-22-today";
 const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
