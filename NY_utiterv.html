@@ -983,97 +983,108 @@ const days = [
  ]},
 {id:"d7", num:7, date:"09.22, Kedd", title:"Downtown: Financial District & Szabadság-szobor", color:"var(--day7)", special:"⛴️ Foglalt komjegy kell", zones:["Financial District"],
  blocks:[
-  {h:"Délelőtt", items:[
+  {h:"Délelőtt — Battery Park City & The Battery", items:[
     {n:"Rockefeller Park", d:"Battery Park City"},
     {n:"The Battery"},
     {n:"Whitehall Terminal", d:"ingyenes Staten Island Ferry"}
   ]},
-  {h:"Délután — komp", items:[
+  {h:"Délután — komp: Szabadság-szobor & Ellis Island", items:[
     {n:"Szabadság-szobor", d:"komp Battery Parkból — ELŐRE foglalt jegy!", q:"Statue of Liberty, New York, NY, USA"},
-    {n:"Ellis Island"},
+    {n:"Ellis Island"}
+  ]},
+  {h:"Uzsonna — vissza a Financial Districtben", items:[
     {n:"Uzsonna: Krispy Kreme", d:"a mindenképp-listáról — van igazolt helyszíne a Financial Districtben", q:"Krispy Kreme, Financial District, New York"}
   ]},
-  {h:"Este", items:[
+  {h:"Este — vacsora a Financial Districtben", items:[
     {n:"Vacsora: Chick-fil-A", d:"a mindenképp-listáról — van igazolt helyszíne a Financial Districtben — a napi ebéd (Liberty Bagels) után más konyha", q:"Chick-fil-A, Financial District, New York"}
   ]},
-  {h:"↻ Áthozva egy korábbi napról", items:[
-    {n:"Ebéd: LENWICH", d:"a listából — szendvics, van igazolt helyszíne az Upper East Side-on", q:"LENWICH, Upper East Side, New York", cidDay:"d5"},
-    {n:"Uzsonna: Little Ruby's", d:"a listából — kávézó/brunch, van igazolt helyszíne Midtownban — ↻ csere Magnolia Bakeryről, hogy ne ismétlődjön (az a 8. napon, West Village/Chelsea-ben marad)", q:"Little Ruby's, Midtown, New York", cidDay:"d2"},
-    {n:"Reggeli kávé: Dunkin'", d:"a mindenképp-listáról — van igazolt helyszíne Midtownban", q:"Dunkin', Midtown, New York", cidDay:"d2"},
-    {n:"Bemelmans Bar", d:"✨ saját tipp (nincs a listádon) — klasszikus zongorabár a Carlyle Hotelben, UES — délutáni koktélnak is jó, nem csak esti programnak", q:"Bemelmans Bar, New York", cidDay:"d5"},
-    {n:"Gapstow Bridge", cidDay:"d4"}
-  ]},
  ]},
-{id:"d8", num:8, date:"09.23, Szerda", title:"Greenwich Village, West Village, Chelsea & Intrepid", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["West Village","Chelsea","Midtown"],
+{id:"d8", num:8, date:"09.23, Szerda", title:"West Village, Chelsea & Midtown — este Lion King", color:"var(--day8)", special:"🎭 ~19:00 Lion King", zones:["West Village","Chelsea","Midtown"],
  blocks:[
-  {h:"Reggel — Greenwich / West Village", items:[
+  {h:"Reggel — kávé útközben", items:[
+    {n:"Reggeli kávé: Dunkin'", d:"a mindenképp-listáról — van igazolt helyszíne Midtownban", q:"Dunkin', Midtown, New York", cidDay:"d2"}
+  ]},
+  {h:"Reggel — West Village", items:[
     {n:"Reggeli: Leon's Bagels", d:"a mindenképp-listáról — van igazolt helyszíne a West Village-ben", q:"Leon's Bagels, West Village, New York"}
   ]},
-  {h:"Délután — Hudson River / Chelsea", items:[
+  {h:"Délelőtt–ebéd — Chelsea", items:[
     {n:"Ebéd: LOS TACOS No.1", d:"a listából — a Chelsea Marketben van igazolt helyszíne, pont itt jártok úgyis", q:"LOS TACOS No.1, Chelsea Market, New York"},
-    {n:"Uzsonna: Magnolia Bakery", d:"a mindenképp-listáról — van igazolt helyszíne Chelsea-ben is (banánkrémes torta) — ↻ áthelyezve a reggeli blokkból, mert az uzsonna délutánra való", q:"Magnolia Bakery, Chelsea, New York"}
+    {n:"Uzsonna: Magnolia Bakery", d:"a mindenképp-listáról — van igazolt helyszíne Chelsea-ben is (banánkrémes torta) — ↻ áthelyezve a reggeli blokkból, mert az uzsonna délutánra való", q:"Magnolia Bakery, Chelsea, New York"},
+    {n:"Uzsonna: smashy burger", d:"a mindenképp-listáról — van igazolt helyszíne Chelsea-ben — ↻ áthozva a 8. napról, hogy ne legyen ott két uzsonna egy napon", q:"smashy burger, Chelsea, New York", cidDay:"d1"}
   ]},
-  {h:"Késő délután — Intrepid Museum", items:[
+  {h:"Délután — Midtown West, Hudson-part", items:[
     {n:"Intrepid Museum", d:"ide TÉNYLEG bemegyünk — Pier 86, számolj 1,5-2 órával a Lion King előtt, foglalj jegyet előre", q:"Intrepid Museum, New York"}
+  ]},
+  {h:"Kora este — Midtown, a színház előtt", items:[
+    {n:"Uzsonna: Little Ruby's", d:"a listából — kávézó/brunch, van igazolt helyszíne Midtownban — ↻ csere Magnolia Bakeryről, hogy ne ismétlődjön (az a 8. napon, West Village/Chelsea-ben marad)", q:"Little Ruby's, Midtown, New York", cidDay:"d2"},
+    {n:"Tudor City Bridge", d:"↻ áthozva a 3. napról", cidDay:"d2"}
   ]},
   {h:"Este ~19:00 — KÖTELEZŐ", items:[
     {n:"The Lion King", d:"Minskoff Theatre, 200 West 45th St — ellenőrizd az időt!", q:"Minskoff Theatre, New York"}
   ]},
-  {h:"↻ Áthozva egy korábbi napról", items:[
+  {h:"Késő este — vacsora az előadás után, Midtown", items:[
     {n:"Vacsora: LOS TACOS No.1", d:"a mindenképp-listáról — van igazolt helyszíne Midtownban", q:"LOS TACOS No.1, Midtown, New York", cidDay:"d2"},
-    {n:"Reggeli: A Taste of Katz's", d:"a listából — delikátesz/szendvics, van igazolt helyszíne Dumbóban (DeKalb Market Hall) — ↻ csere Butlerről; a másik három Dumbo-i listás hely (Shake Shack, Time Out Market, Dunkin') már foglalt ma másik étkezésre", q:"A Taste of Katz's, Dumbo, Brooklyn", cidDay:"d6"},
-    {n:"Uzsonna: smashy burger", d:"a mindenképp-listáról — van igazolt helyszíne Chelsea-ben — ↻ áthozva a 8. napról, hogy ne legyen ott két uzsonna egy napon", q:"smashy burger, Chelsea, New York", cidDay:"d1"}
+    {n:"Uzsonna: Upside Pizza", d:"a listából — pizza, van igazolt helyszíne Midtownban — ↻ csere LENWICH-ről, hogy ne ismétlődjön (az a 5. napon, Upper East Side-on marad)", q:"Upside Pizza, Midtown, New York", cidDay:"d3"}
   ]},
  ]},
-{id:"d9", num:9, date:"09.24, Csütörtök", title:"Downtown: SoHo, Tribeca, Chinatown & bevásárlás", color:"var(--day9)", special:null, zones:["SoHo/Tribeca"],
+{id:"d9", num:9, date:"09.24, Csütörtök", title:"Downtown: Tribeca, SoHo, Chinatown & South Street Seaport", color:"var(--day9)", special:null, zones:["SoHo/Tribeca"],
  blocks:[
-  {h:"Reggel — Tribeca & SoHo", items:[
-    {n:"155 Franklin St", d:"Tribeca"},
-    {n:"SoHo séta", q:"SoHo, New York"}
+  {h:"Reggel — Tribeca", items:[
+    {n:"155 Franklin St", d:"Tribeca"}
   ]},
-  {h:"Délelőtt — South Street Seaport & Chinatown", items:[
-    {n:"Pier 16", d:"South Street Seaport"},
-    {n:"Pier 35", d:"Lower East Side folyóparti park"},
-    {n:"Chinatown séta", q:"Chinatown, New York"}
-  ]},
-  {h:"Ebéd", items:[
-    {n:"Ebéd: Bubby's", d:"a listából — amerikai konyha, Tribeca — pont ott jártok délelőtt", q:"Bubby's, Tribeca, New York"}
-  ]},
-  {h:"Délután — bevásárlás", items:[
+  {h:"Délelőtt — SoHo", items:[
+    {n:"SoHo séta", q:"SoHo, New York"},
     {n:"Uzsonna: Caffe Paradiso", d:"a mindenképp-listáról — olasz kávézó, van igazolt helyszíne a SoHo/Tribecában — ↻ áthelyezve a reggeli blokkból, mert az uzsonna délutánra való", q:"Caffe Paradiso, SoHo, New York"}
   ]},
-  {h:"Este", items:[
+  {h:"Ebéd — Tribeca", items:[
+    {n:"Ebéd: Bubby's", d:"a listából — amerikai konyha, Tribeca — pont ott jártok délelőtt", q:"Bubby's, Tribeca, New York"}
+  ]},
+  {h:"Kora délután — Chinatown", items:[
+    {n:"Chinatown séta", q:"Chinatown, New York"}
+  ]},
+  {h:"Délután — folyópart: Lower East Side & South Street Seaport", items:[
+    {n:"Pier 35", d:"Lower East Side folyóparti park"},
+    {n:"Pier 16", d:"South Street Seaport"}
+  ]},
+  {h:"Este — vacsora SoHo/NoHo", items:[
     {n:"Vacsora: Lafayette Grand Café & Bakery", d:"a mindenképp-listáról — francia bisztró, SoHo/Tribeca", q:"Lafayette Grand Café & Bakery, New York"}
   ]},
-  {h:"↻ Áthozva egy korábbi napról", items:[
-    {n:"Uzsonna: Levain Bakery", d:"a mindenképp-listáról — híres cookie-k, Upper West Side-i eredeti hely", q:"Levain Bakery, Upper West Side, New York", cidDay:"d4"},
-    {n:"Reggeli: Ralph's Coffee", d:"a listából — kávézó, van igazolt helyszíne az Upper East Side-on — ↻ csere Dunkin'-ról, hogy ne ismétlődjön (a Dunkin' már a 2. napon szerepel)", q:"Ralph's Coffee, Upper East Side, New York", cidDay:"d5"},
+ ]},
+{id:"d10", num:10, date:"09.25, Péntek", title:"Uptown: Upper West Side, Central Park & Upper East Side (+ Harlem este)", color:"var(--day10)", special:null, zones:["Upper West Side","Upper East Side","Harlem"],
+ blocks:[
+  {h:"Reggel — Upper West Side", items:[
     {n:"Reggeli: Caffe Paradiso", d:"a mindenképp-listáról — olasz kávézó, van igazolt helyszíne az Upper West Side-on", q:"Caffe Paradiso, Upper West Side, New York", cidDay:"d4"},
     {n:"Apple Upper West Side", d:"✨ frissítve a bővült listából", q:"Apple Upper West Side, New York", cidDay:"d4"},
+    {n:"Uzsonna: Levain Bakery", d:"a mindenképp-listáról — híres cookie-k, Upper West Side-i eredeti hely", q:"Levain Bakery, Upper West Side, New York", cidDay:"d4"}
+  ]},
+  {h:"Délelőtt — Central Park déli vége", items:[
+    {n:"Gapstow Bridge", cidDay:"d4"}
+  ]},
+  {h:"Ebéd — Upper East Side", items:[
+    {n:"Ebéd: LENWICH", d:"a listából — szendvics, van igazolt helyszíne az Upper East Side-on", q:"LENWICH, Upper East Side, New York", cidDay:"d5"}
+  ]},
+  {h:"Délután — Upper East Side", items:[
+    {n:"Reggeli: Ralph's Coffee", d:"a listából — kávézó, van igazolt helyszíne az Upper East Side-on — ↻ csere Dunkin'-ról, hogy ne ismétlődjön (a Dunkin' már a 2. napon szerepel)", q:"Ralph's Coffee, Upper East Side, New York", cidDay:"d5"},
+    {n:"Uzsonna: Krispy Kreme", d:"a mindenképp-listáról — van igazolt helyszíne az Upper East Side-on", q:"Krispy Kreme, Upper East Side, New York", cidDay:"d5"}
+  ]},
+  {h:"Naplemente — Central Park", items:[
     {n:"Esti séta a Central Parkban naplementekor", d:"✨ saját tipp — a Bow Bridge és a Bethesda Terrace naplementekor különösen szép", q:"Bow Bridge, Central Park, New York", cidDay:"d4"}
   ]},
- ]},
-{id:"d10", num:10, date:"09.25, Péntek", title:"Pihenő nap a szállás közelében", color:"var(--day10)", special:null, zones:["Szállás mellett (NJ)"],
- blocks:[
-  {h:"Délelőtt — séta a szállás közelében (↻ a Hamptons-kirándulás helyett, ami kimaradt)", items:[
-    {n:"Reggeli: Las Chicas Bakery & Cafe", d:"a listából — Union City-i pékség/kávézó, kb. 10 perc a szállástól", q:"Las Chicas Bakery & Cafe, Union City, NJ"},
-    {n:"Hudson River Waterfront Walkway", d:"folyóparti sétány Jersey City-ben, panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ"},
-    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ"}
+  {h:"Este — vacsora Harlemben", items:[
+    {n:"Vacsora: Sylvia's Restaurant", d:"a listából — soul food, Harlem", q:"Sylvia's Restaurant, Harlem, New York", cidDay:"d5"}
   ]},
-  {h:"Délután — séta folytatása", items:[
-    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ"},
-    {n:"Uzsonna: The Cheesecake Factory", d:"a mindenképp-listáról — Newport Mall, Jersey City, útba esik a folyóparti séta végén", q:"The Cheesecake Factory, Newport Centre Mall, Jersey City, NJ"}
-  ]},
-  {h:"↻ Áthozva egy korábbi napról", items:[
-    {n:"Uzsonna: Krispy Kreme", d:"a mindenképp-listáról — van igazolt helyszíne az Upper East Side-on", q:"Krispy Kreme, Upper East Side, New York", cidDay:"d5"},
-    {n:"Vacsora: Sylvia's Restaurant", d:"a listából — soul food, Harlem", q:"Sylvia's Restaurant, Harlem, New York", cidDay:"d5"},
-    {n:"Harriet's Rooftop", d:"koktélbár kilátással, 1 Hotel Brooklyn Bridge tetején", cidDay:"d6"}
+  {h:"Éjszaka — koktél az Upper East Side-on", items:[
+    {n:"Bemelmans Bar", d:"✨ saját tipp (nincs a listádon) — klasszikus zongorabár a Carlyle Hotelben, UES — délutáni koktélnak is jó, nem csak esti programnak", q:"Bemelmans Bar, New York", cidDay:"d5"}
   ]},
  ]},
-{id:"d11", num:11, date:"09.26, Szombat", title:"Coney Island, Astoria & Williamsburg", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg","Astoria"],
+{id:"d11", num:11, date:"09.26, Szombat", title:"Coney Island, DUMBO, Williamsburg & Astoria", color:"var(--day11)", special:"🥪 Smorgasburg csak szombat", zones:["Williamsburg","Astoria","Dumbo"],
  blocks:[
   {h:"Kora reggel — Coney Island", items:[
     {n:"Coney Island", d:"tengerpart, móló, vidámpark — korán érdemes, hogy még beleférjen Astoria és Williamsburg is aznap", q:"Coney Island, New York"}
+  ]},
+  {h:"Délelőtt — DUMBO, útban vissza északra", items:[
+    {n:"Reggeli: A Taste of Katz's", d:"a listából — delikátesz/szendvics, van igazolt helyszíne Dumbóban (DeKalb Market Hall) — ↻ csere Butlerről; a másik három Dumbo-i listás hely (Shake Shack, Time Out Market, Dunkin') már foglalt ma másik étkezésre", q:"A Taste of Katz's, Dumbo, Brooklyn", cidDay:"d6"},
+    {n:"Harriet's Rooftop", d:"koktélbár kilátással, 1 Hotel Brooklyn Bridge tetején", cidDay:"d6"}
   ]},
   {h:"Délelőtt — Williamsburg", items:[
     {n:"Reggeli: Peter Pan Donut & Pastry Shop", d:"a mindenképp-listáról — Williamsburg", q:"Peter Pan Donut & Pastry Shop, Brooklyn, New York"},
@@ -1083,17 +1094,13 @@ const days = [
   {h:"11:00–18:00 — ebéd itt", items:[
     {n:"Ebéd: Smorgasburg", d:"a listából — Williamsburg waterfront street-food piac", q:"Smorgasburg, Williamsburg, Brooklyn"}
   ]},
-  {h:"Este — Astoria", items:[
+  {h:"Este — Astoria & Long Island City", items:[
     {n:"Astoria Park", d:"Queens"},
     {n:"Uzsonna: Brooklyn Bagel & Coffee Company", d:"a mindenképp-listáról — az egyik kevés lista-étterem, aminek ténylegesen van igazolt helyszíne Astoriában", q:"Brooklyn Bagel & Coffee Company, Astoria, New York"},
     {n:"Hunter's Point South Park", d:"látványos Manhattan-panoráma Long Island City-ből, kb. 15-20 perccel délebbre Astoriától", q:"Hunter's Point South Park, Long Island City, NY"}
   ]},
   {h:"Éjszaka — vissza Williamsburgbe, útban a szállás felé", items:[
     {n:"Vacsora: L'industrie Pizzeria", d:"a mindenképp-listáról — van igazolt helyszíne Williamsburgben — Astoriában nincs a listában valódi vacsorahely, ezért ide, Williamsburgbe került, ami úgyis útba esik hazafelé", q:"L'industrie Pizzeria, Williamsburg, Brooklyn"}
-  ]},
-  {h:"↻ Áthozva egy korábbi napról", items:[
-    {n:"Uzsonna: Upside Pizza", d:"a listából — pizza, van igazolt helyszíne Midtownban — ↻ csere LENWICH-ről, hogy ne ismétlődjön (az a 5. napon, Upper East Side-on marad)", q:"Upside Pizza, Midtown, New York", cidDay:"d3"},
-    {n:"Tudor City Bridge", d:"↻ áthozva a 3. napról", cidDay:"d2"}
   ]},
  ]},
 {id:"d12", num:12, date:"09.27, Vasárnap", title:"Utolsó nap / hazaút", color:"var(--day12)", special:"🧳 21:50 JFK indulás", zones:["Szállás mellett (NJ)"],
@@ -1103,11 +1110,15 @@ const days = [
     {n:"Csomagok leadása csomagmegőrzőben", d:"foglalj előre az appban", loc:false},
     {n:"Reggeli a Six Corners Cafe-ban", d:"North Bergen-i kávézó, szó szerint a szállás városrészében, jó választás egy nyugodt utolsó reggelihez", q:"Six Corners Cafe, North Bergen, NJ"}
   ]},
+  {h:"Délelőtt — szabad program a szállás környékén (ha van kedvetek)", items:[
+    {n:"Reggeli: Las Chicas Bakery & Cafe", d:"a listából — Union City-i pékség/kávézó, kb. 10 perc a szállástól", q:"Las Chicas Bakery & Cafe, Union City, NJ", cidDay:"d10"},
+    {n:"Hudson River Waterfront Walkway", d:"folyóparti sétány Jersey City-ben, panoráma Manhattan felé, PATH-hal vagy autóval kb. 20 perc a szállástól", q:"Hudson River Waterfront Walkway, Jersey City, NJ", cidDay:"d10"},
+    {n:"J. Owen Grundy Park", d:"parti park Paulus Hooknál, Manhattan-kilátással", q:"J Owen Grundy Park, Jersey City, NJ", cidDay:"d10"},
+    {n:"1 Wharf Plaza Park", d:"kis parti park, útba esik a sétánál", q:"1 Wharf Plaza Park, Jersey City, NJ", cidDay:"d10"},
+    {n:"Uzsonna: The Cheesecake Factory", d:"a mindenképp-listáról — Newport Mall, Jersey City, útba esik a folyóparti séta végén", q:"The Cheesecake Factory, Newport Centre Mall, Jersey City, NJ", cidDay:"d10"}
+  ]},
   {h:"Ebéd", items:[
     {n:"Ebéd: Las Chicas Bakery & Cafe", d:"a listából — Union City-i pékség/kávézó, kb. 10 perc a szállástól", q:"Las Chicas Bakery & Cafe, Union City, NJ"}
-  ]},
-  {h:"Délelőtt — szabad, pihenős idő indulás előtt", items:[
-    {n:"Nincs betervezett program — a nap többi része szabadon hagyva, hogy legyen mozgástér a csomagolás/pihenés előtt az utolsó, rövidebb napon", loc:false}
   ]},
   {h:"~17:30–18:00", items:[
     {n:"Csomagok felvétele", loc:false},
@@ -1490,7 +1501,7 @@ renderTaxes();
 // (🩺 gomb) ezt mutatja, hogy egyértelműen lássuk: a telefonon tényleg a legfrissebb
 // kód fut-e, vagy még egy régebbi, gyorsítótárazott verzió (pl. ha a "visszaálló pipa"
 // hiba a korábbi javítások ELLENÉRE is jelentkezik).
-const BUILD_VERSION = "2026-09-22-replan2";
+const BUILD_VERSION = "2026-09-22-geoplan";
 const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
