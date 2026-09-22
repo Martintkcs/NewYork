@@ -981,17 +981,29 @@ const days = [
     {n:"Century 21 NYC", cidDay:"d9"}
   ]},
  ]},
-{id:"d7", num:7, date:"09.22, Kedd", title:"SoHo & Chinatown → Staten Island Ferry → DUMBO rooftop", color:"var(--day7)", special:null, zones:["SoHo/Tribeca","Financial District","Dumbo"],
+{id:"d7", num:7, date:"09.22, Kedd", title:"Downtown körút: SoHo, Chinatown, Battery, kompok & DUMBO", color:"var(--day7)", special:"⛴️ Foglalt komjegy kell", zones:["SoHo/Tribeca","Financial District","Dumbo"],
  blocks:[
   {h:"Délelőtt — Tribeca & SoHo", items:[
     {n:"155 Franklin St", d:"Tribeca", cidDay:"d9"},
     {n:"SoHo séta", q:"SoHo, New York", cidDay:"d9"}
   ]},
-  {h:"Kora délután — Chinatown", items:[
+  {h:"Délelőtt — Chinatown", items:[
     {n:"Chinatown séta", q:"Chinatown, New York", cidDay:"d9"}
   ]},
-  {h:"Délután — Staten Island Ferry (ingyenes, Whitehall Terminal)", items:[
+  {h:"Kora délután — Battery Park City & The Battery", items:[
+    {n:"Rockefeller Park", d:"Battery Park City"},
+    {n:"The Battery"}
+  ]},
+  {h:"Délután — komp: Szabadság-szobor & Ellis Island", items:[
+    {n:"Szabadság-szobor", d:"komp Battery Parkból — ELŐRE foglalt jegy!", q:"Statue of Liberty, New York, NY, USA"},
+    {n:"Ellis Island"}
+  ]},
+  {h:"Késő délután — Staten Island Ferry (ingyenes, Whitehall Terminal)", items:[
     {n:"Whitehall Terminal", d:"ingyenes Staten Island Ferry"}
+  ]},
+  {h:"Kora este — South Street Seaport & Lower East Side folyópart", items:[
+    {n:"Pier 16", d:"South Street Seaport", cidDay:"d9"},
+    {n:"Pier 35", d:"Lower East Side folyóparti park", cidDay:"d9"}
   ]},
   {h:"Este — DUMBO, koktél kilátással", items:[
     {n:"Harriet's Rooftop", d:"koktélbár kilátással, 1 Hotel Brooklyn Bridge tetején", cidDay:"d6"}
@@ -1015,21 +1027,10 @@ const days = [
     {n:"The Lion King", d:"Minskoff Theatre, 200 West 45th St — ellenőrizd az időt!", q:"Minskoff Theatre, New York"}
   ]},
  ]},
-{id:"d9", num:9, date:"09.24, Csütörtök", title:"Financial District, komp: Szabadság-szobor & Ellis Island, Seaport", color:"var(--day9)", special:"⛴️ Foglalt komjegy kell", zones:["Financial District"],
+{id:"d9", num:9, date:"09.24, Csütörtök", title:"Szabad nap", color:"var(--day9)", special:null, zones:["Bárhol"],
  blocks:[
-  {h:"Délelőtt — Battery Park City & The Battery", items:[
-    {n:"Rockefeller Park", d:"Battery Park City", cidDay:"d7"},
-    {n:"The Battery", cidDay:"d7"}
-  ]},
-  {h:"Délután — komp: Szabadság-szobor & Ellis Island", items:[
-    {n:"Szabadság-szobor", d:"komp Battery Parkból — ELŐRE foglalt jegy!", q:"Statue of Liberty, New York, NY, USA", cidDay:"d7"},
-    {n:"Ellis Island", cidDay:"d7"}
-  ]},
-  {h:"Késő délután — South Street Seaport", items:[
-    {n:"Pier 16", d:"South Street Seaport"}
-  ]},
-  {h:"Este — Lower East Side folyópart", items:[
-    {n:"Pier 35", d:"Lower East Side folyóparti park"}
+  {h:"Szabad program", items:[
+    {n:"Szabad program — elfogyott a betervezett program, erre a napra szabadon dönthettek", loc:false}
   ]},
  ]},
 {id:"d10", num:10, date:"09.25, Péntek", title:"Jersey City folyópart → naplemente a Central Parkban & Upper East Side", color:"var(--day10)", special:null, zones:["Szállás mellett (NJ)","Upper East Side"],
@@ -1453,7 +1454,7 @@ renderTaxes();
 // (🩺 gomb) ezt mutatja, hogy egyértelműen lássuk: a telefonon tényleg a legfrissebb
 // kód fut-e, vagy még egy régebbi, gyorsítótárazott verzió (pl. ha a "visszaálló pipa"
 // hiba a korábbi javítások ELLENÉRE is jelentkezik).
-const BUILD_VERSION = "2026-09-22-today";
+const BUILD_VERSION = "2026-09-22-today2";
 const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
@@ -3041,6 +3042,21 @@ renderMapView();
 /* init */
 refreshVisuals();
 updateTrainMarker();
+// Egyszeri, utólagos jelölés: az Apple Upper West Side-ot kipipáltnak vesszük.
+// A szerverre is kimegy, és csak a sikeres írás után jegyezzük fel, hogy megtörtént —
+// így ha az írás elbukik (pl. net nélkül), a következő indításnál újrapróbálja.
+(function(){
+  const FLAG = 'ny2026_doneMark_appleUWS';
+  if(localStorage.getItem(FLAG) === '1') return;
+  const cid = 'chk-d4-AppleUpperWestSide';
+  localStorage.setItem('ny2026_'+cid, '1');
+  refreshVisuals();
+  if(!syncEnabled){ localStorage.setItem(FLAG, '1'); return; }
+  bumpLocalSyncVersion();
+  syncFetchWrite(SYNC_PATH + "/checks/" + encodeURIComponent(cid) + ".json", {
+    method: "PUT", body: JSON.stringify('1')
+  }).then(res=>{ if(res && res.ok) localStorage.setItem(FLAG, '1'); });
+})();
 renderBudget();
 updateSyncBadge();
 initSync();
