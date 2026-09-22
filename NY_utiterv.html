@@ -1292,7 +1292,7 @@ renderTaxes();
 // (🩺 gomb) ezt mutatja, hogy egyértelműen lássuk: a telefonon tényleg a legfrissebb
 // kód fut-e, vagy még egy régebbi, gyorsítótárazott verzió (pl. ha a "visszaálló pipa"
 // hiba a korábbi javítások ELLENÉRE is jelentkezik).
-const BUILD_VERSION = "2026-09-19-fulllist-syncfix";
+const BUILD_VERSION = "2026-09-22-export";
 const SYNC_DB_URL = "https://newyork-e62ac-default-rtdb.firebaseio.com";
 const SYNC_TRIP_ID = "ny2026-takacs";
 const SYNC_PATH = SYNC_DB_URL ? (SYNC_DB_URL.replace(/\/$/,'') + "/tripSync/" + SYNC_TRIP_ID) : "";
@@ -1680,12 +1680,63 @@ views.filter(v=>!BOTTOM_TAB_VIEWS.includes(v.id)).forEach(v=>{
   moreSheetList.appendChild(b);
 });
 (function(){
+  const exportBtn = document.createElement('button');
+  exportBtn.className = 'mobilenavitem';
+  exportBtn.innerHTML = `<span class="mobilenavicon">📤</span><span>Pipák exportálása (szöveg)</span>`;
+  exportBtn.onclick = ()=>{ closeMoreSheet(); exportChecks(); };
+  moreSheetList.appendChild(exportBtn);
   const resetBtn = document.createElement('button');
   resetBtn.className = 'mobilenavitem resetitem';
   resetBtn.innerHTML = `<span class="mobilenavicon">↺</span><span>Összes pipa törlése</span>`;
   resetBtn.onclick = ()=>{ closeMoreSheet(); resetAll(); };
   moreSheetList.appendChild(resetBtn);
 })();
+// A kipipált tételek listáját adja szövegesen, másolható formában — így a telefonon
+// tárolt (és a Firebase-be szinkronizált) állapot egy koppintással átadható.
+function exportChecks(){
+  const out = [];
+  out.push('NY-PIPAK v1 | build: '+BUILD_VERSION+' | '+new Date().toISOString().slice(0,16));
+  const doneSights = [];
+  days.forEach(day=>{
+    day.blocks.forEach(block=>block.items.forEach(item=>{
+      const cid = 'chk-'+day.id+'-'+item.n.replace(/[^a-zA-Z0-9]/g,'').slice(0,40);
+      if(localStorage.getItem('ny2026_'+cid)==='1') doneSights.push(day.id+' | '+item.n);
+    }));
+  });
+  out.push('', '## KIPIPALT PROGRAMOK ('+doneSights.length+')', ...doneSights);
+  const doneExtra = [];
+  extraSpots.forEach(cat=> cat.items.forEach(item=>{
+    const cid = 'chk-extra-'+cat.cat.replace(/[^a-zA-Z0-9]/g,'')+'-'+item.n.replace(/[^a-zA-Z0-9]/g,'').slice(0,40);
+    if(localStorage.getItem('ny2026_'+cid)==='1') doneExtra.push(cat.cat+' | '+item.n);
+  }));
+  out.push('', '## KIPIPALT EXTRA, Boston/DC ('+doneExtra.length+')', ...doneExtra);
+  const doneFood = [];
+  restaurants.forEach((r,i)=>{ if(localStorage.getItem('ny2026_rchk-'+i)==='1') doneFood.push(r.n); });
+  out.push('', '## KIPIPALT ETTERMEK ('+doneFood.length+')', ...doneFood);
+  const doneAnytime = [];
+  anytimeOptions.forEach(o=>{ if(localStorage.getItem(atCheckedKey(o.id))==='1') doneAnytime.push(o.n); });
+  out.push('', '## KIPIPALT BARMIKOR-PROGRAMOK ('+doneAnytime.length+')', ...doneAnytime);
+  const text = out.join('\n');
+  const modal = document.getElementById('locModal');
+  modal.querySelector('.locModalTitle').textContent = '📤 Pipák exportálása';
+  modal.querySelector('.locModalBody').innerHTML =
+    `<button class="shufflebtn" style="width:100%;background:#000;color:#fff;margin-bottom:8px;" onclick="copyExportText()">📋 Másolás a vágólapra</button>
+     <div class="note" id="copyNote" style="margin-bottom:8px;">Másold ki, és küldd el — ebből pontosan látszik, mi van már kipipálva.</div>
+     <textarea id="exportArea" readonly style="width:100%;height:50vh;font-family:ui-monospace,Menlo,monospace;font-size:.72rem;box-sizing:border-box;padding:8px;border:2px solid #000;border-radius:8px;"></textarea>`;
+  modal.querySelector('#exportArea').value = text;
+  modal.style.display = 'flex';
+}
+function copyExportText(){
+  const ta = document.getElementById('exportArea');
+  if(!ta) return;
+  const note = document.getElementById('copyNote');
+  const done = ()=>{ if(note){ note.textContent = '✅ Kimásolva — már be tudod illeszteni.'; } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ ta.select(); document.execCommand('copy'); done(); });
+  } else {
+    ta.select(); document.execCommand('copy'); done();
+  }
+}
 // Panel nyitva léte alatt a háttér (body) görgetése le van tiltva — enélkül mobilon
 // (főleg iOS Safarin) előfordul, hogy érintésre a lista helyett a mögötte lévő oldal görög,
 // ami úgy tűnik, mintha a panel listája "nem lenne görgethető".
